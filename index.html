@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SafeGuard Pro - 제철 제선 안전 인허가 관리 시스템</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <!-- FOUC 방지: 저장된 테마를 CSS 로드 직후 즉시 적용 -->
+  <script>
+    (function(){
+      var m = localStorage.getItem('themeMode');
+      if(m === 'dark') document.documentElement.setAttribute('data-theme','dark');
+    })();
+  </script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+<!-- ===== 로그인 화면 ===== -->
+<div id="loginScreen" style="display:none;">
+  <div class="login-bg">
+    <!-- 배경 장식 원 -->
+    <div class="login-bg-circle login-bg-circle1"></div>
+    <div class="login-bg-circle login-bg-circle2"></div>
+    <div class="login-bg-circle login-bg-circle3"></div>
+
+    <div class="login-card" id="loginCard">
+      <!-- 로고 -->
+      <div class="login-logo">
+        <div class="login-logo-icon">
+          <i class="fas fa-shield-alt"></i>
+        </div>
+        <div class="login-logo-text">
+          <span class="login-logo-title">SafeGuard <strong>Pro</strong></span>
+          <span class="login-logo-sub">철강산업 안전관리 통합 플랫폼</span>
+        </div>
+      </div>
+
+      <!-- 구분선 -->
+      <div class="login-divider"></div>
+
+      <!-- 폼 -->
+      <form class="login-form" onsubmit="handleLoginSubmit(event)">
+        <div class="login-field">
+          <label class="login-label"><i class="fas fa-user"></i> 아이디</label>
+          <input
+            type="text"
+            id="loginId"
+            class="login-input"
+            placeholder="아이디를 입력하세요"
+            autocomplete="username"
+            spellcheck="false"
+          />
+        </div>
+
+        <div class="login-field">
+          <label class="login-label"><i class="fas fa-lock"></i> 비밀번호</label>
+          <div class="login-pw-wrap">
+            <input
+              type="password"
+              id="loginPw"
+              class="login-input"
+              placeholder="비밀번호를 입력하세요"
+              autocomplete="current-password"
+            />
+            <button type="button" class="login-pw-toggle" onclick="togglePwVisibility()" title="비밀번호 표시/숨김">
+              <i class="fas fa-eye" id="pwToggleIcon"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- 오류 메시지 -->
+        <p class="login-error" id="loginError" style="display:none;"></p>
+
+        <button type="submit" class="login-btn" id="loginBtn">
+          <i class="fas fa-sign-in-alt"></i> 로그인
+        </button>
+      </form>
+
+      <div class="login-footer">© 2026 SafeGuard Pro · 제선·고로 특화 v5.0</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 로그아웃 확인 모달 ===== -->
+<div class="logout-overlay" id="logoutConfirmOverlay"></div>
+<div class="logout-modal" id="logoutConfirmModal">
+  <div class="logout-modal-icon"><i class="fas fa-sign-out-alt"></i></div>
+  <h3 class="logout-modal-title">로그아웃</h3>
+  <p class="logout-modal-desc">로그아웃 하시겠습니까?<br><small>브라우저를 닫으면 세션이 자동 만료됩니다.</small></p>
+  <div class="logout-modal-btns">
+    <button class="logout-cancel-btn" onclick="cancelLogout()">취소</button>
+    <button class="logout-confirm-btn" onclick="executeLogout()"><i class="fas fa-sign-out-alt"></i> 로그아웃</button>
+  </div>
+</div>
+
+<!-- 모바일 오버레이 -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- 전체 레이아웃 -->
+<div class="app-layout" id="appLayout" style="display:none;">
+
+  <!-- ===== 사이드바 ===== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo-wrap" onclick="navigateTo('dashboard', null)" style="cursor:pointer;" title="대시보드로 이동">
+        <div class="logo-icon"><i class="fas fa-industry"></i></div>
+        <div class="logo-text">
+          <span class="logo-title">SafeGuard</span>
+          <span class="logo-sub">Pro</span>
+        </div>
+      </div>
+      <button class="sidebar-close" onclick="closeSidebar()"><i class="fas fa-times"></i></button>
+    </div>
+
+    <!-- 로그인 사용자 정보 -->
+    <div class="sidebar-user-info">
+      <div class="sidebar-user-avatar"><i class="fas fa-user-circle"></i></div>
+      <div class="sidebar-user-details">
+        <span class="sidebar-user-name" id="sidebarUserName">관리자</span>
+        <span class="sidebar-user-role">관리자 계정</span>
+      </div>
+    </div>
+
+    <!-- ===== 다크모드 토글 ===== -->
+    <div class="theme-toggle-wrap">
+      <span class="theme-toggle-icon">☀️</span>
+      <label class="theme-toggle-switch" id="themeToggleLabel" title="다크모드로 전환">
+        <input type="checkbox" id="themeToggleInput" onchange="toggleTheme()">
+        <span class="theme-toggle-slider"></span>
+      </label>
+      <span class="theme-toggle-icon">🌙</span>
+    </div>
+
+    <div class="sidebar-tagline">건설 안전 인허가 관리 시스템</div>
+
+    <!-- 오늘의 알림 요약 위젯 -->
+    <div class="sidebar-widget">
+      <div class="widget-title"><i class="fas fa-bell"></i> 오늘의 알림</div>
+      <div class="widget-items" id="todayAlertWidget">
+        <div class="widget-item urgent">
+          <span class="widget-dot"></span>
+          <span>유해위험방지계획서 D-7</span>
+        </div>
+        <div class="widget-item warning">
+          <span class="widget-dot"></span>
+          <span>안전관리계획서 D-14</span>
+        </div>
+        <div class="widget-item normal">
+          <span class="widget-dot"></span>
+          <span>위험성평가 보고서 D-30</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 네비게이션 메뉴 -->
+    <nav class="sidebar-nav">
+      <ul>
+        <li>
+          <a href="#" class="nav-item" data-page="dashboard" onclick="navigateTo('dashboard', this)">
+            <span class="nav-icon"><i class="fas fa-tachometer-alt"></i></span>
+            <span class="nav-label">
+              <span class="nav-title">대시보드</span>
+              <span class="nav-desc">프로젝트 현황 한눈에</span>
+            </span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-item active" data-page="law-chatbot" onclick="navigateTo('law-chatbot', this)">
+            <span class="nav-icon"><i class="fas fa-book-open"></i></span>
+            <span class="nav-label">
+              <span class="nav-title">법령 챗봇</span>
+              <span class="nav-desc">안전법령 AI 상담</span>
+            </span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-item" data-page="guideline-chatbot" onclick="navigateTo('guideline-chatbot', this)">
+            <span class="nav-icon"><i class="fas fa-clipboard-list"></i></span>
+            <span class="nav-label">
+              <span class="nav-title">유권해석 챗봇</span>
+              <span class="nav-desc">인허가 가이드라인 상담</span>
+            </span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-item" data-page="jsa-analysis" onclick="navigateTo('jsa-analysis', this)">
+            <span class="nav-icon"><i class="fas fa-search-plus"></i></span>
+            <span class="nav-label">
+              <span class="nav-title">JSA 위험성평가</span>
+              <span class="nav-desc">재해사례 기반 작업위험 분석</span>
+            </span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-item" data-page="checklist" onclick="navigateTo('checklist', this)">
+            <span class="nav-icon"><i class="fas fa-check-square"></i></span>
+            <span class="nav-label">
+              <span class="nav-title">인허가 체크리스트</span>
+              <span class="nav-desc">인허가 사항 확인</span>
+            </span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-item" data-page="notification" onclick="navigateTo('notification', this)">
+            <span class="nav-icon"><i class="fas fa-bell"></i></span>
+            <span class="nav-label">
+              <span class="nav-title">알림 설정</span>
+              <span class="nav-desc">일정 알림 관리</span>
+            </span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="footer-info"><i class="fas fa-industry"></i> 제선·고로 특화 v5.0</div>
+      <div class="footer-info" id="sidebar-law-date">
+        <i class="fas fa-shield-alt"></i> 법령 기준일: <span id="footer-law-date">—</span>
+      </div>
+      <div class="footer-info" id="sidebar-data-date">
+        <i class="fas fa-sync-alt"></i> 데이터 최신화: <span id="footer-data-date">—</span>
+      </div>
+      <!-- 로그아웃 버튼 -->
+      <button class="sidebar-logout-btn" onclick="confirmLogout()">
+        <i class="fas fa-sign-out-alt"></i> 로그아웃
+      </button>
+    </div>
+  </aside>
+
+  <!-- ===== 메인 콘텐츠 ===== -->
+  <main class="main-content">
+
+    <!-- 상단 헤더 바 -->
+    <header class="top-bar">
+      <button class="hamburger-btn" onclick="openSidebar()">
+        <i class="fas fa-bars"></i>
+      </button>
+      <div class="top-bar-title" id="topBarTitle">안전법령 AI 상담</div>
+      <div class="top-bar-actions">
+        <div class="top-date"><i class="far fa-calendar-alt"></i> <span id="currentDate"></span></div>
+        <div class="urgent-badge-wrap" id="urgentBadgeWrap" style="display:none;">
+          <button class="urgent-badge" id="urgentBadge" onclick="navigateTo('notification', document.querySelector('[data-page=notification]'))" title="마감 임박 항목 보기">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span id="urgentBadgeCount">0</span>건 임박
+          </button>
+        </div>
+        <div class="user-badge"><i class="fas fa-user-circle"></i> 관리자</div>
+      </div>
+    </header>
+
+    <!-- ===== 페이지 컨테이너들 ===== -->
+
+    <!-- 페이지 0: 대시보드 -->
+    <section class="page" id="page-dashboard">
+      <div class="page-header">
+        <div class="page-header-icon" style="background:linear-gradient(135deg,#1B3A5C,#234b76)"><i class="fas fa-tachometer-alt"></i></div>
+        <div class="page-header-text">
+          <h1 class="page-title">프로젝트 대시보드</h1>
+          <p class="page-desc">제선·고로 플랜트 인허가 현황을 한눈에 확인하세요</p>
+        </div>
+        <div class="page-header-actions">
+          <button class="btn-outline-sm" onclick="refreshDashboard()"><i class="fas fa-sync-alt"></i> 새로고침</button>
+        </div>
+      </div>
+
+      <!-- 요약 카드 4개 -->
+      <div class="dash-summary-grid">
+        <div class="dash-card dash-card-blue" id="dashCard1"
+          onclick="navigateTo(typeof alertSettings !== 'undefined' && alertSettings ? 'notification' : 'checklist', document.querySelector(typeof alertSettings !== 'undefined' && alertSettings ? '[data-page=notification]' : '[data-page=checklist]'))">
+          <div class="dash-card-icon"><i class="fas fa-folder-open" id="dashCard1Icon"></i></div>
+          <div class="dash-card-body">
+            <div class="dash-card-num" id="dashTotalItems">0</div>
+            <div class="dash-card-label" id="dashCard1Label">등록된 프로젝트</div>
+          </div>
+          <div class="dash-card-sub" id="dashCard1Sub">알림 설정에서 등록하세요</div>
+        </div>
+        <div class="dash-card dash-card-orange" onclick="navigateTo('notification', document.querySelector('[data-page=notification]'))">
+          <div class="dash-card-icon"><i class="fas fa-bell"></i></div>
+          <div class="dash-card-body">
+            <div class="dash-card-num" id="dashActiveNotifs">0</div>
+            <div class="dash-card-label">진행 중인 인허가</div>
+          </div>
+          <div class="dash-card-sub">마감 미도래 항목</div>
+        </div>
+        <div class="dash-card dash-card-red" id="dashUrgentCard" onclick="navigateTo('notification', document.querySelector('[data-page=notification]'))">
+          <div class="dash-card-icon"><i class="fas fa-exclamation-triangle"></i></div>
+          <div class="dash-card-body">
+            <div class="dash-card-num" id="dashUrgentCount">0</div>
+            <div class="dash-card-label">D-7 이내 긴급</div>
+          </div>
+          <div class="dash-card-sub">즉시 확인 필요</div>
+        </div>
+        <div class="dash-card dash-card-green" onclick="navigateTo('checklist', document.querySelector('[data-page=checklist]'))">
+          <div class="dash-card-icon"><i class="fas fa-check-circle"></i></div>
+          <div class="dash-card-body">
+            <div class="dash-card-num" id="dashDoneCount">0</div>
+            <div class="dash-card-label">완료된 항목</div>
+          </div>
+          <div class="dash-card-sub">인허가 완료 처리</div>
+        </div>
+      </div>
+
+      <!-- 다가오는 인허가 일정 -->
+      <div class="dash-row">
+        <div class="dash-panel" style="flex:1.2;">
+          <div class="dash-panel-header">
+            <i class="fas fa-calendar-alt"></i> 다가오는 인허가 일정
+            <span class="dash-panel-sub">착공일 기준 최근 5개</span>
+          </div>
+          <div id="dashUpcomingList">
+            <div class="dash-empty"><i class="fas fa-calendar-times"></i><p>알림 설정에서 착공일을 등록하면<br>일정이 표시됩니다</p></div>
+          </div>
+        </div>
+
+        <!-- 카테고리별 현황 -->
+        <div class="dash-panel" style="flex:0.8;">
+          <div class="dash-panel-header">
+            <i class="fas fa-chart-pie"></i> 카테고리별 인허가 현황
+          </div>
+          <div id="dashCategoryChart">
+            <div class="dash-category-list" id="dashCategoryList"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 간트차트 타임라인 -->
+      <div class="dash-panel" style="margin-top:16px;">
+        <div class="dash-panel-header">
+          <i class="fas fa-stream"></i> 전체 인허가 타임라인
+          <span class="dash-panel-sub" id="dashTimelineRange"></span>
+          <button class="btn-outline-sm" style="margin-left:auto;" onclick="exportDashboardCSV()"><i class="fas fa-file-csv"></i> CSV 내보내기</button>
+        </div>
+        <div id="dashTimeline">
+          <div class="dash-empty"><i class="fas fa-project-diagram"></i><p>알림 설정 후 타임라인이 생성됩니다</p></div>
+        </div>
+      </div>
+
+      <!-- JSA 위험성평가 요약 -->
+      <div class="dash-panel jsa-dash-panel" style="margin-top:16px;">
+        <div class="dash-panel-header">
+          <i class="fas fa-search-plus" style="color:#E67E22;"></i> JSA 위험성평가 요약
+          <span class="dash-panel-sub">재해사례 DB 기반</span>
+          <button class="btn-outline-sm" style="margin-left:auto;"
+            onclick="navigateTo('jsa-analysis', document.querySelector('[data-page=jsa-analysis]'))">
+            <i class="fas fa-arrow-right"></i> 위험성평가 바로가기
+          </button>
+        </div>
+        <div class="jsa-dash-grid">
+          <div class="jsa-dash-stat">
+            <div class="jsa-dash-stat-num" id="dashJsaTotalCases">—</div>
+            <div class="jsa-dash-stat-label">총 재해사례</div>
+          </div>
+          <div class="jsa-dash-stat jsa-dash-stat-danger">
+            <div class="jsa-dash-stat-num" id="dashJsaDeathCases">—</div>
+            <div class="jsa-dash-stat-label">사망사고</div>
+          </div>
+          <div class="jsa-dash-stat-group">
+            <div class="jsa-dash-stat-label" style="font-weight:700;margin-bottom:8px;"><i class="fas fa-fire"></i> 최다 위험 작업 TOP 3</div>
+            <div id="dashJsaTopWork" class="jsa-dash-top-list"></div>
+          </div>
+          <div class="jsa-dash-stat-group">
+            <div class="jsa-dash-stat-label" style="font-weight:700;margin-bottom:8px;"><i class="fas fa-chart-pie"></i> 최다 사고 유형 TOP 3</div>
+            <div id="dashJsaTopType" class="jsa-dash-top-list"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 페이지 1: 법령 챗봇 -->
+    <section class="page active" id="page-law-chatbot">
+      <div class="page-header">
+        <div class="page-header-icon law-icon"><i class="fas fa-book-open"></i></div>
+        <div class="page-header-text">
+          <h1 class="page-title">안전법령 AI 상담</h1>
+          <p class="page-desc">중대재해처벌법, 산업안전보건법 등 최신 법령을 실시간으로 검색하고 질의할 수 있습니다</p>
+        </div>
+      </div>
+
+      <!-- ✅ 법령 데이터 상태 인디케이터 -->
+      <div class="law-api-status-bar" id="lawApiStatusBar">
+        <div class="law-status-indicator">
+          <span class="law-status-dot law-status-checking" id="lawApiStatusDot"></span>
+          <span class="law-status-text" id="lawApiStatusText">연결 확인 중...</span>
+        </div>
+        <div class="law-status-bar-right">
+          <span class="law-status-source">
+            <i class="fas fa-landmark"></i>
+            출처: 국가법령정보센터 (www.law.go.kr)
+          </span>
+          <button class="law-refresh-btn" id="lawRefreshBtn" onclick="refreshLawData()" title="캐시 초기화 후 실시간 API 재호출">
+            <i class="fas fa-sync-alt"></i> 법령 데이터 새로고침
+          </button>
+        </div>
+      </div>
+
+      <div class="chat-layout">
+        <!-- 채팅 메인 영역 -->
+        <div class="chat-main">
+          <div class="chat-window" id="lawChatWindow">
+            <!-- 초기 AI 메시지는 main.js에서 동적 삽입 -->
+          </div>
+          <div class="chat-typing" id="lawTyping" style="display:none;">
+            <div class="msg-avatar ai-avatar small"><i class="fas fa-robot"></i></div>
+            <div class="typing-indicator"><span></span><span></span><span></span></div>
+          </div>
+          <div class="chat-input-wrap">
+            <textarea class="chat-input" id="lawChatInput" placeholder="법령에 관한 질문을 입력하세요... (Enter: 전송 / Shift+Enter: 줄바꿈)" rows="1" onkeydown="handleChatKeydown(event, 'law')" oninput="autoResize(this)"></textarea>
+            <button class="send-btn" onclick="sendLawChat()" title="전송"><i class="fas fa-paper-plane"></i></button>
+          </div>
+        </div>
+
+        <!-- 자주 묻는 질문 사이드 -->
+        <div class="chat-sidebar">
+          <div class="faq-card">
+            <div class="faq-title"><i class="fas fa-question-circle"></i> 자주 묻는 질문</div>
+            <div class="faq-list">
+              <button class="faq-btn" onclick="askFaq('law', '중대재해처벌법 적용 대상 및 적용범위는?')">
+                <span class="faq-num">①</span> 중대재해처벌법 적용 대상은?
+              </button>
+              <button class="faq-btn" onclick="askFaq('law', '안전관리자 선임 기준과 자격 요건은?')">
+                <span class="faq-num">②</span> 안전관리자 선임 기준은?
+              </button>
+              <button class="faq-btn" onclick="askFaq('law', '위험성평가 실시 방법과 주기는?')">
+                <span class="faq-num">③</span> 위험성평가 실시 방법·주기는?
+              </button>
+              <button class="faq-btn" onclick="askFaq('law', '유해위험방지계획서 작성 및 제출 기준은?')">
+                <span class="faq-num">④</span> 유해위험방지계획서 제출 기준은?
+              </button>
+              <button class="faq-btn" onclick="askFaq('law', '안전보건교육 시간 기준과 종류는?')">
+                <span class="faq-num">⑤</span> 안전보건교육 시간 기준은?
+              </button>
+            </div>
+          </div>
+
+          <div class="info-card">
+            <div class="info-card-title"><i class="fas fa-satellite-dish"></i> 실시간 API 연동 법령</div>
+            <ul class="law-list">
+              <li><i class="fas fa-bolt" style="color:#f39c12;"></i> 중대재해 처벌 등에 관한 법률</li>
+              <li><i class="fas fa-bolt" style="color:#f39c12;"></i> 산업안전보건법</li>
+              <li><i class="fas fa-bolt" style="color:#f39c12;"></i> 산업안전보건법 시행령</li>
+              <li><i class="fas fa-bolt" style="color:#f39c12;"></i> 산업안전보건법 시행규칙</li>
+              <li><i class="fas fa-bolt" style="color:#f39c12;"></i> 건설기술 진흥법</li>
+            </ul>
+            <div class="law-list-note">
+              <i class="fas fa-database"></i> 오프라인 백업: 40개 조문 (자동 전환)
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 페이지 2: 유권해석 챗봇 -->
+    <section class="page" id="page-guideline-chatbot">
+      <div class="page-header">
+        <div class="page-header-icon guideline-icon"><i class="fas fa-clipboard-list"></i></div>
+        <div class="page-header-text">
+          <h1 class="page-title">인허가 가이드라인 상담</h1>
+          <p class="page-desc">고용노동부, 한국산업안전보건공단의 유권해석 및 가이드라인을 기반으로 답변합니다</p>
+        </div>
+      </div>
+
+      <div class="chat-layout">
+        <div class="chat-main">
+          <!-- 카테고리 필터 -->
+          <div class="category-filter">
+            <label class="filter-label"><i class="fas fa-filter"></i> 카테고리 선택:</label>
+            <select class="filter-select" id="guidelineCategory" onchange="filterCategory()">
+              <option value="all">전체 (고용노동부 + KOSHA)</option>
+              <option value="중대재해처벌법">⚖️ 중대재해처벌법</option>
+              <option value="산업안전보건법">🛡️ 산업안전보건법</option>
+              <option value="건설기술진흥법">🏗️ 건설기술진흥법</option>
+              <option value="시설물안전법">🏛️ 시설물안전법</option>
+            </select>
+          </div>
+
+          <div class="chat-window" id="guidelineChatWindow">
+            <!-- 초기 AI 메시지는 main.js에서 동적 삽입 -->
+          </div>
+          <div class="chat-typing" id="guidelineTyping" style="display:none;">
+            <div class="msg-avatar ai-avatar guideline-avatar small"><i class="fas fa-user-tie"></i></div>
+            <div class="typing-indicator"><span></span><span></span><span></span></div>
+          </div>
+          <div class="chat-input-wrap">
+            <textarea class="chat-input" id="guidelineChatInput" placeholder="인허가 관련 질문을 입력하세요... (Enter: 전송 / Shift+Enter: 줄바꿈)" rows="1" onkeydown="handleChatKeydown(event, 'guideline')" oninput="autoResize(this)"></textarea>
+            <button class="send-btn guideline-send" onclick="sendGuidelineChat()" title="전송"><i class="fas fa-paper-plane"></i></button>
+          </div>
+        </div>
+
+        <div class="chat-sidebar">
+          <div class="faq-card">
+            <div class="faq-title"><i class="fas fa-question-circle"></i> 자주 묻는 질문</div>
+            <div class="faq-list">
+              <button class="faq-btn" onclick="askFaq('guideline', '유해위험방지계획서 작성 필수 항목과 제출 방법은?')">
+                <span class="faq-num">①</span> 유해위험방지계획서 작성 방법은?
+              </button>
+              <button class="faq-btn" onclick="askFaq('guideline', '건설현장 위험성평가 실시 절차와 방법은?')">
+                <span class="faq-num">②</span> 위험성평가 실시 절차는?
+              </button>
+              <button class="faq-btn" onclick="askFaq('guideline', '타워크레인 안전관리 및 안전검사 방법은?')">
+                <span class="faq-num">③</span> 타워크레인 안전관리 방법은?
+              </button>
+              <button class="faq-btn" onclick="askFaq('guideline', '건설현장 비계 설치 기준과 안전 수칙은?')">
+                <span class="faq-num">④</span> 비계 설치 기준 및 안전수칙은?
+              </button>
+              <button class="faq-btn" onclick="askFaq('guideline', '중대재해처벌법 50억 건설업 적용 범위와 기준은?')">
+                <span class="faq-num">⑤</span> 중대재해처벌법 건설업 적용 기준?
+              </button>
+            </div>
+          </div>
+
+          <div class="info-card">
+            <div class="info-card-title"><i class="fas fa-building"></i> 유권해석 발행 기관</div>
+            <ul class="law-list">
+              <li><i class="fas fa-stamp"></i> 고용노동부</li>
+              <li><i class="fas fa-stamp"></i> 한국산업안전보건공단(KOSHA)</li>
+              <li><i class="fas fa-stamp"></i> 국토교통부</li>
+              <li><i class="fas fa-stamp"></i> 환경부</li>
+              <li><i class="fas fa-stamp"></i> 행정안전부</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 페이지: JSA 위험성평가 -->
+    <section class="page" id="page-jsa-analysis">
+      <div class="page-header">
+        <div class="page-header-icon" style="background:linear-gradient(135deg,var(--posco-blue),var(--posco-light-blue))">
+          <i class="fas fa-shield-alt"></i>
+        </div>
+        <div class="page-header-text">
+          <h1 class="page-title">JSA 위험성평가</h1>
+          <p class="page-desc">일일 작업속보를 붙여넣으면 재해사례 DB 기반으로 자동 위험성평가 및 단계별 안전조치를 생성합니다</p>
+        </div>
+        <!-- API 모드 배지 -->
+        <div class="jsa-api-mode-badge" id="jsaApiModeBadge">
+          <i class="fas fa-microchip"></i> 규칙기반 엔진
+        </div>
+      </div>
+
+      <div class="jsa-layout">
+        <!-- ── 왼쪽 패널 ── -->
+        <div class="jsa-left-panel">
+
+          <!-- 입력 카드 -->
+          <div class="jsa-input-card">
+            <div class="jsa-card-header">
+              <i class="fas fa-clipboard-list"></i> 작업 정보 입력
+            </div>
+            <div class="jsa-card-body">
+
+              <!-- ── 입력 탭 ── -->
+              <div class="jsa-input-tabs" role="tablist">
+                <button class="jsa-tab-btn active" id="tabBulletin" role="tab"
+                  onclick="switchJsaTab('bulletin')" aria-selected="true">
+                  <i class="fas fa-paste"></i> 작업속보 붙여넣기
+                </button>
+                <button class="jsa-tab-btn" id="tabManual" role="tab"
+                  onclick="switchJsaTab('manual')" aria-selected="false">
+                  <i class="fas fa-edit"></i> 수동 입력
+                </button>
+              </div>
+
+              <!-- ── 탭1: 작업속보 붙여넣기 ── -->
+              <div class="jsa-tab-content" id="tabContentBulletin">
+                <div class="jsa-bulletin-wrap">
+                  <textarea id="jsaBulletinText" class="jsa-bulletin-textarea"
+                    rows="14" placeholder="예)
+[○○제철소 일일 작업속보 - 2026.05.19]
+1. 고로 1호기 출선구 보수작업 (10:00~14:00, 3명)
+   - 장소: 제1고로 출선장
+   - 작업내용: 내화물 교체, 산소절단 사용
+
+2. 코크스 오븐 상부 점검 (13:00~17:00, 2명)
+   - 고소작업, 분진 노출 우려
+   - 장소: 코크스공장 3번 오븐
+
+3. 냉각탑 내부 배관 청소작업 (09:00~12:00, 4명)
+   - 밀폐공간, 산소결핍 우려
+   - 장소: 제강 냉각탑 B동
+
+카카오톡/문자로 받은 작업속보 내용을 그대로 붙여넣으세요."></textarea>
+
+                  <div class="jsa-bulletin-actions">
+                    <button class="jsa-analyze-btn" id="jsaAnalyzeBtn" onclick="startJsaAnalysis()">
+                      <i class="fas fa-search-plus"></i> AI 자동 분석
+                    </button>
+                    <button class="jsa-clear-btn" onclick="clearBulletinText()" title="입력 내용 지우기">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                  <p class="jsa-bulletin-hint">
+                    <i class="fas fa-lightbulb"></i>
+                    카카오톡·문자·이메일로 받은 작업속보를 그대로 붙여넣으면 자동으로 작업을 분리·분석합니다
+                  </p>
+                </div>
+              </div>
+
+              <!-- ── 탭2: 수동 입력 ── -->
+              <div class="jsa-tab-content" id="tabContentManual" style="display:none;">
+
+                <!-- 작업명 -->
+                <div class="jsa-form-group">
+                  <label class="jsa-label"><i class="fas fa-tag"></i> 작업명 <span class="jsa-required">*</span></label>
+                  <input type="text" id="jsaWorkName" class="jsa-input" placeholder="예) 고로 1호기 내화물 보수 작업" />
+                </div>
+
+                <!-- 작업 종류 + 장소 -->
+                <div class="jsa-form-row">
+                  <div class="jsa-form-group jsa-half">
+                    <label class="jsa-label"><i class="fas fa-tools"></i> 작업 종류 <span class="jsa-required">*</span></label>
+                    <select id="jsaWorkType" class="jsa-select">
+                      <option value="">-- 선택 --</option>
+                      <option>고로 작업</option><option>전로 작업</option>
+                      <option>연주 작업</option><option>압연 작업</option>
+                      <option>소결 작업</option><option>코크스로 작업</option>
+                      <option>가스설비 작업</option><option>전기설비 작업</option>
+                      <option>배관 작업</option><option>크레인 작업</option>
+                      <option>밀폐공간 작업</option><option>고소 작업</option>
+                      <option>화기 작업</option><option>해체/정비 작업</option>
+                      <option>운반/하역 작업</option><option>기타</option>
+                    </select>
+                  </div>
+                  <div class="jsa-form-group jsa-half">
+                    <label class="jsa-label"><i class="fas fa-map-marker-alt"></i> 작업 장소 <span class="jsa-required">*</span></label>
+                    <select id="jsaWorkLoc" class="jsa-select">
+                      <option value="">-- 선택 --</option>
+                      <option>고로</option><option>전로</option>
+                      <option>연주기</option><option>압연기</option>
+                      <option>소결로</option><option>코크스로</option>
+                      <option>가스홀더</option><option>전기실</option>
+                      <option>보일러실</option><option>옥외 배관</option>
+                      <option>지하 피트</option><option>옥상/고소</option>
+                      <option>야적장</option><option>기타</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- 작업 환경 요소 -->
+                <div class="jsa-form-group">
+                  <label class="jsa-label"><i class="fas fa-exclamation-triangle"></i> 작업 환경 요소 <span style="font-size:0.78rem;color:var(--text-sub);">(복수 선택)</span></label>
+                  <div class="jsa-env-grid">
+                    <label class="jsa-env-item"><input type="checkbox" class="jsa-env-checkbox" value="고온(200℃ 이상)"><span>🌡️ 고온</span></label>
+                    <label class="jsa-env-item"><input type="checkbox" class="jsa-env-checkbox" value="밀폐공간"><span>🚪 밀폐공간</span></label>
+                    <label class="jsa-env-item"><input type="checkbox" class="jsa-env-checkbox" value="유해가스(CO/H2S 등)"><span>☁️ 유해가스</span></label>
+                    <label class="jsa-env-item"><input type="checkbox" class="jsa-env-checkbox" value="분진"><span>💨 분진</span></label>
+                    <label class="jsa-env-item"><input type="checkbox" class="jsa-env-checkbox" value="소음(85dB 이상)"><span>🔊 소음</span></label>
+                    <label class="jsa-env-item"><input type="checkbox" class="jsa-env-checkbox" value="고소(2m 이상)"><span>🪜 고소</span></label>
+                    <label class="jsa-env-item"><input type="checkbox" class="jsa-env-checkbox" value="중량물(1톤 이상)"><span>⚖️ 중량물</span></label>
+                    <label class="jsa-env-item"><input type="checkbox" class="jsa-env-checkbox" value="화기 사용"><span>🔥 화기</span></label>
+                    <label class="jsa-env-item"><input type="checkbox" class="jsa-env-checkbox" value="전기 활선"><span>⚡ 전기</span></label>
+                    <label class="jsa-env-item"><input type="checkbox" class="jsa-env-checkbox" value="회전체 근접"><span>⚙️ 회전체</span></label>
+                    <label class="jsa-env-item"><input type="checkbox" class="jsa-env-checkbox" value="산소결핍 우려"><span>😷 산소결핍</span></label>
+                    <label class="jsa-env-item"><input type="checkbox" class="jsa-env-checkbox" value="위험물 취급"><span>☢️ 위험물</span></label>
+                  </div>
+                </div>
+
+                <!-- 인원 + 예정일 -->
+                <div class="jsa-form-row">
+                  <div class="jsa-form-group jsa-half">
+                    <label class="jsa-label"><i class="fas fa-users"></i> 작업 인원</label>
+                    <input type="number" id="jsaWorkerCount" class="jsa-input" placeholder="명" min="1" />
+                  </div>
+                  <div class="jsa-form-group jsa-half">
+                    <label class="jsa-label"><i class="fas fa-calendar-alt"></i> 작업 예정일</label>
+                    <input type="date" id="jsaWorkDate" class="jsa-input" />
+                  </div>
+                </div>
+
+                <!-- 수동 입력 분석 버튼 -->
+                <button class="jsa-analyze-btn" id="jsaManualAnalyzeBtn" onclick="startManualAnalysis()">
+                  <i class="fas fa-bolt"></i> 위험성 분석 시작
+                </button>
+              </div><!-- /tabContentManual -->
+
+            </div><!-- /jsa-card-body -->
+          </div><!-- /jsa-input-card -->
+
+          <!-- 최근 분석 이력 -->
+          <div class="jsa-history-card">
+            <div class="jsa-card-header">
+              <span><i class="fas fa-history"></i> 최근 분석 이력</span>
+              <button class="jsa-history-clear-btn" onclick="clearJsaHistory()" title="이력 전체 삭제">
+                <i class="fas fa-trash-alt"></i>
+              </button>
+            </div>
+            <div class="jsa-history-list" id="jsaHistoryList">
+              <div class="jsa-history-empty">분석 이력이 없습니다.</div>
+            </div>
+          </div>
+
+        </div><!-- /jsa-left-panel -->
+
+        <!-- ── 오른쪽 패널 ── -->
+        <div class="jsa-right-panel">
+
+          <!-- 로딩 영역 -->
+          <div class="jsa-loading-section" id="jsaLoadingSection" style="display:none;">
+            <div class="jsa-loading-box">
+              <div class="jsa-loading-spinner">
+                <div class="jsa-spinner-ring"></div>
+                <div class="jsa-spinner-ring jsa-ring2"></div>
+              </div>
+              <p class="jsa-loading-step" id="jsaLoadingStep">분석 준비 중...</p>
+              <div class="jsa-progress-bar">
+                <div class="jsa-progress-fill" id="jsaProgressFill" style="width:0%"></div>
+              </div>
+              <p class="jsa-loading-sub">재해사례 DB 15건 + 위험요인 사전 기반 분석</p>
+            </div>
+          </div>
+
+          <!-- 결과 영역 -->
+          <div id="jsaResultSection">
+            <!-- 초기 빈 상태 -->
+            <div class="jsa-result-empty" id="jsaEmptyState">
+              <div class="jsa-empty-icon">
+                <i class="fas fa-shield-alt"></i>
+              </div>
+              <h3>JSA 자동 위험성평가</h3>
+              <p>좌측에 <strong>일일 작업속보</strong>를 붙여넣고<br><strong>"AI 자동 분석"</strong> 버튼을 클릭하세요</p>
+              <div class="jsa-empty-features">
+                <div class="jsa-empty-feat"><i class="fas fa-database"></i> 재해사례 DB 자동 매칭</div>
+                <div class="jsa-empty-feat"><i class="fas fa-chart-bar"></i> 빈도×강도 위험성 점수</div>
+                <div class="jsa-empty-feat"><i class="fas fa-list-check"></i> 단계별 안전조치 생성</div>
+                <div class="jsa-empty-feat"><i class="fas fa-file-alt"></i> 관련 법규 자동 인용</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 재해사례 DB 아코디언 -->
+          <div class="jsa-casedb-accordion" id="jsaCaseDbSection" style="display:none;">
+            <button class="jsa-accordion-header" onclick="toggleCaseDbAccordion(this)">
+              <span><i class="fas fa-database"></i>&nbsp;관련 재해사례 DB</span>
+              <span class="jsa-accordion-count" id="jsaCaseCount">0건</span>
+              <i class="fas fa-chevron-down jsa-accordion-icon"></i>
+            </button>
+            <div class="jsa-accordion-body" id="jsaAccordionBody">
+              <div class="jsa-filter-bar">
+                <select id="jsaFilterType" class="jsa-filter-select" onchange="applyJsaFilter()">
+                  <option value="">전체 사고유형</option>
+                  <option>추락</option><option>질식</option><option>화상</option>
+                  <option>감전</option><option>폭발</option><option>끼임</option><option>기타</option>
+                </select>
+                <select id="jsaFilterSeverity" class="jsa-filter-select" onchange="applyJsaFilter()">
+                  <option value="">전체 심각도</option>
+                  <option value="death">사망</option>
+                  <option value="serious">중상</option>
+                  <option value="minor">경상</option>
+                </select>
+                <div class="jsa-filter-search">
+                  <i class="fas fa-search"></i>
+                  <input type="text" id="jsaFilterKeyword" class="jsa-filter-input" placeholder="키워드 검색..." oninput="applyJsaFilter()" />
+                </div>
+              </div>
+              <div class="jsa-case-grid" id="jsaCaseGrid"></div>
+            </div>
+          </div>
+
+        </div><!-- /jsa-right-panel -->
+      </div><!-- /jsa-layout -->
+    </section>
+
+    <!-- 페이지 3: 인허가 체크리스트 (제철·제선 플랜트 특화) -->
+    <section class="page" id="page-checklist">
+      <div class="page-header">
+        <div class="page-header-icon checklist-icon"><i class="fas fa-industry"></i></div>
+        <div class="page-header-text">
+          <h1 class="page-title">제선·고로 플랜트 인허가 확인</h1>
+          <p class="page-desc">제철산업(제선) 건설 프로젝트에 필요한 인허가 28개 항목을 확인하고 관리하세요</p>
+        </div>
+        <div class="page-header-tags">
+          <span class="header-tag tag-industry"><i class="fas fa-fire"></i> 고로(BF)</span>
+          <span class="header-tag tag-industry"><i class="fas fa-wind"></i> 열풍로</span>
+          <span class="header-tag tag-industry"><i class="fas fa-flask"></i> 코크스</span>
+          <span class="header-tag tag-industry"><i class="fas fa-leaf"></i> 소결</span>
+        </div>
+      </div>
+
+      <!-- Step 1: 프로젝트 기본정보 -->
+      <div class="step-container">
+        <div class="step-header">
+          <div class="step-badge">Step 1</div>
+          <h2 class="step-title">프로젝트 기본정보 입력</h2>
+          <span class="step-desc">공사 구분 선택 시 적합한 인허가 항목이 자동 추천됩니다</span>
+        </div>
+
+        <!-- 기본 정보 행 1 -->
+        <div class="form-grid form-grid-3">
+          <div class="form-group">
+            <label class="form-label"><i class="fas fa-project-diagram"></i> 프로젝트명 <span class="required">*</span></label>
+            <input type="text" class="form-input" id="projectName" placeholder="예: ○○제철 제4고로 신설공사" />
+          </div>
+          <div class="form-group">
+            <label class="form-label"><i class="fas fa-industry"></i> 공사 구분 <span class="required">*</span></label>
+            <select class="form-input" id="constructionType" onchange="onConstructionTypeChange()">
+              <option value="">선택하세요 (선택 시 추천 항목 표시)</option>
+              <option value="고로신설">고로 신설</option>
+              <option value="고로개수">고로 개수(릴라이닝)</option>
+              <option value="열풍로신설보수">열풍로 신설·보수</option>
+              <option value="소결설비신설증설">소결설비 신설·증설</option>
+              <option value="코크스설비신설증설">코크스설비 신설·증설</option>
+              <option value="가스정제설비교체증설">가스정제설비 교체·증설</option>
+              <option value="부생가스배관설치교체">부생가스 배관 설치·교체</option>
+              <option value="원료처리설비증설">원료처리설비 증설</option>
+              <option value="기타부대설비">기타 부대설비</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label"><i class="fas fa-won-sign"></i> 총 공사금액 (억원)</label>
+            <input type="number" class="form-input" id="constructionCost" placeholder="예: 5000" min="0" />
+          </div>
+        </div>
+
+        <!-- 기본 정보 행 2 -->
+        <div class="form-grid form-grid-3">
+          <div class="form-group">
+            <label class="form-label"><i class="fas fa-users"></i> 상시근로자 수 (명)</label>
+            <input type="number" class="form-input" id="workerCount" placeholder="예: 300" min="0" />
+          </div>
+          <div class="form-group">
+            <label class="form-label"><i class="fas fa-people-group"></i> 일 최대 동시 투입 인원 (명)</label>
+            <input type="number" class="form-input" id="peakWorkerCount" placeholder="예: 800" min="0" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" style="margin-bottom:8px;"><i class="fas fa-toggle-on"></i> 취급 여부 (해당 항목 체크)</label>
+            <div class="toggle-checkboxes">
+              <label class="toggle-item">
+                <input type="checkbox" id="hazChemCheck" onchange="onHazardChange()" />
+                <span class="toggle-label">⚗️ 유해화학물질 취급</span>
+              </label>
+              <label class="toggle-item">
+                <input type="checkbox" id="highGasCheck" onchange="onHazardChange()" />
+                <span class="toggle-label">💨 고압가스 취급</span>
+              </label>
+              <label class="toggle-item">
+                <input type="checkbox" id="confinedSpaceCheck" onchange="onHazardChange()" />
+                <span class="toggle-label">🕳️ 밀폐공간 작업</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- 추천 항목 안내 배너 -->
+        <div class="recommend-banner" id="recommendBanner" style="display:none;">
+          <i class="fas fa-lightbulb"></i>
+          <span id="recommendBannerText">공사 구분을 선택하면 필수 인허가 항목이 표시됩니다.</span>
+        </div>
+      </div>
+
+      <!-- Step 2: 인허가 항목 선택 (아코디언) -->
+      <div class="step-container">
+        <div class="step-header">
+          <div class="step-badge">Step 2</div>
+          <h2 class="step-title">인허가 항목 선택 <span class="step-count-info" id="stepCountInfo"></span></h2>
+          <div class="step-actions">
+            <button class="btn-outline-sm" onclick="selectAllChecklist(true)"><i class="fas fa-check-double"></i> 전체선택</button>
+            <button class="btn-outline-sm" onclick="selectAllChecklist(false)"><i class="fas fa-times"></i> 전체해제</button>
+          </div>
+        </div>
+
+        <!-- 카테고리 범례 -->
+        <div class="category-legend">
+          <span class="legend-item" style="--cat-color:#1B3A5C;"><i class="fas fa-hard-hat"></i> 산업안전보건</span>
+          <span class="legend-item" style="--cat-color:#2E7D4F;"><i class="fas fa-leaf"></i> 환경</span>
+          <span class="legend-item" style="--cat-color:#C0392B;"><i class="fas fa-flask"></i> 화학·가스</span>
+          <span class="legend-item" style="--cat-color:#D35400;"><i class="fas fa-bolt"></i> 에너지·전기·소방</span>
+          <span class="legend-item" style="--cat-color:#6C3483;"><i class="fas fa-building"></i> 건설행정·기타</span>
+        </div>
+
+        <!-- 뱃지 범례 -->
+        <div class="badge-legend">
+          <span class="badge-new2026">★ 2026 최신 개정 반영</span>
+          <span class="badge-recommended">추천</span>
+          <span class="badge-legend-text">항목 번호 3, 4, 17, 18번은 2026년 최신 개정 사항입니다.</span>
+        </div>
+
+        <div class="checklist-accordion-wrap" id="checklistGrid">
+          <!-- 아코디언 카테고리별 체크리스트 아이템은 JS로 생성 -->
+        </div>
+      </div>
+
+      <!-- Step 3: 확인 버튼 -->
+      <div class="step-container" style="text-align:center;">
+        <div class="confirm-summary" id="confirmSummary">
+          <span id="selectedCountDisplay">선택된 항목: 0개</span>
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;align-items:center;">
+          <button class="btn-primary-lg" onclick="confirmChecklist()">
+            <i class="fas fa-search-plus"></i> 선택 항목 상세 확인하기
+          </button>
+          <button class="btn-go-notif" id="goToNotifBtn" style="display:none;"
+            onclick="syncNotifItems(); navigateTo('notification', document.querySelector('[data-page=notification]'))">
+            <i class="fas fa-bell"></i> 알림 설정으로 이동 →
+          </button>
+        </div>
+      </div>
+
+      <!-- 결과 영역 -->
+      <div id="checklistResult" style="display:none;">
+        <div class="step-container">
+          <div class="step-header">
+            <div class="step-badge result-badge">결과</div>
+            <h2 class="step-title">인허가 상세 정보</h2>
+            <div style="display:flex;gap:8px;margin-left:auto;">
+              <button class="btn-outline-sm" onclick="exportChecklist()"><i class="fas fa-download"></i> 결과 저장(.txt)</button>
+              <button class="btn-outline-sm" style="color:#FF6B35;border-color:#FF6B35;"
+                onclick="syncNotifItems(); navigateTo('notification', document.querySelector('[data-page=notification]'))">
+                <i class="fas fa-bell"></i> 알림 설정
+              </button>
+            </div>
+          </div>
+          <div class="result-grid" id="resultGrid"><!-- JS로 동적 생성 --></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 페이지 4: 알림 설정 v4.0 -->
+    <section class="page" id="page-notification">
+      <div class="page-header">
+        <div class="page-header-icon notification-icon"><i class="fas fa-bell"></i></div>
+        <div class="page-header-text">
+          <h1 class="page-title">프로젝트 일정 알림 설정</h1>
+          <p class="page-desc">체크리스트에서 선택한 인허가 항목의 마감일과 알림 시점을 설정하세요</p>
+        </div>
+        <div class="page-header-actions">
+          <button class="btn-outline-sm" onclick="exportNotifCSV()"><i class="fas fa-file-csv"></i> CSV 내보내기</button>
+        </div>
+      </div>
+
+      <div class="notification-layout">
+
+        <!-- ── 왼쪽 설정 패널 ── -->
+        <div class="notification-form-panel">
+
+          <!-- ① 프로젝트 일정 -->
+          <div class="notif-section">
+            <div class="notif-section-title"><i class="fas fa-project-diagram"></i> 프로젝트 일정 정보</div>
+            <div class="notif-section-body">
+              <div class="form-group">
+                <label class="form-label">프로젝트명 <span class="required">*</span></label>
+                <input type="text" class="form-input" id="notifProjectName" placeholder="예: ○○제철 제4고로 신설공사" oninput="updatePreview()" />
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label"><i class="fas fa-calendar-check"></i> 착공예정일 <span class="required">*</span></label>
+                  <input type="date" class="form-input" id="startDate" onchange="renderPermitTable(); updatePreview();" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label"><i class="fas fa-flag-checkered"></i> 준공예정일</label>
+                  <input type="date" class="form-input" id="endDate" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ② 인허가 항목 테이블 (체크리스트 자동 연동) -->
+          <div class="notif-section">
+            <div class="notif-section-title">
+              <i class="fas fa-list-check"></i> 인허가 항목별 알림 시점
+              <span class="notif-title-sub">체크리스트 선택 항목 자동 반영</span>
+            </div>
+            <div id="notifPermitTableWrap">
+              <!-- JS 렌더링 -->
+            </div>
+          </div>
+
+          <!-- ③ 전역 알림 시점 (기본값) -->
+          <div class="notif-section">
+            <div class="notif-section-title"><i class="fas fa-clock"></i> 기본 알림 시점 (항목별 미체크 시 적용)</div>
+            <div class="notif-section-body">
+              <div class="timing-grid">
+                <label class="timing-chip" for="dMinus30"><input type="checkbox" id="dMinus30" value="30" onchange="updatePreview()" /><span>D-30</span></label>
+                <label class="timing-chip" for="dMinus14"><input type="checkbox" id="dMinus14" value="14" checked onchange="updatePreview()" /><span>D-14</span></label>
+                <label class="timing-chip" for="dMinus7"><input type="checkbox" id="dMinus7" value="7" checked onchange="updatePreview()" /><span>D-7</span></label>
+                <label class="timing-chip" for="dMinus3"><input type="checkbox" id="dMinus3" value="3" onchange="updatePreview()" /><span>D-3</span></label>
+                <label class="timing-chip" for="dMinus1"><input type="checkbox" id="dMinus1" value="1" onchange="updatePreview()" /><span>D-1</span></label>
+              </div>
+            </div>
+          </div>
+
+          <!-- ④ 알림 채널 -->
+          <div class="notif-section">
+            <div class="notif-section-title"><i class="fas fa-satellite-dish"></i> 알림 채널 설정</div>
+            <div class="notif-section-body">
+
+              <!-- 텔레그램 -->
+              <div class="channel-option">
+                <div class="channel-option-header">
+                  <label class="channel-checkbox">
+                    <input type="checkbox" id="telegramCheck" onchange="toggleChannel('telegram')" />
+                    <span class="channel-icon telegram-icon"><i class="fab fa-telegram-plane"></i></span>
+                    <span class="channel-label">텔레그램 알림</span>
+                  </label>
+                  <button class="channel-guide-btn" onclick="openModal('telegramModal')">
+                    <i class="fas fa-question-circle"></i> 설정 가이드
+                  </button>
+                </div>
+                <div class="channel-input" id="telegramInput" style="display:none;">
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label class="form-label" style="font-size:0.78rem;">Bot Token</label>
+                      <input type="text" class="form-input" id="telegramBotToken" placeholder="123456789:ABC-DEF1234ghIkl-zyx57W2v1u123ew11" />
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label" style="font-size:0.78rem;">Chat ID</label>
+                      <input type="text" class="form-input" id="telegramChatId" placeholder="-100123456789" />
+                    </div>
+                  </div>
+                  <button class="btn-tg-test" onclick="sendTestTelegram()">
+                    <i class="fab fa-telegram-plane"></i> 테스트 알림 발송
+                  </button>
+                </div>
+              </div>
+
+              <!-- 이메일 -->
+              <div class="channel-option">
+                <div class="channel-option-header">
+                  <label class="channel-checkbox">
+                    <input type="checkbox" id="emailCheck" onchange="toggleChannel('email')" />
+                    <span class="channel-icon email-icon"><i class="fas fa-envelope"></i></span>
+                    <span class="channel-label">이메일 알림 (Google Apps Script)</span>
+                  </label>
+                  <button class="channel-guide-btn" onclick="openModal('emailModal')">
+                    <i class="fas fa-question-circle"></i> 설정 가이드
+                  </button>
+                </div>
+                <div class="channel-input" id="emailInput" style="display:none;">
+                  <input type="email" class="form-input" id="emailAddr" placeholder="수신 이메일 주소 입력" onchange="updatePreview()" />
+                  <div class="email-notice">
+                    <i class="fas fa-info-circle"></i>
+                    이메일 알림은 Google Apps Script 연동이 필요합니다.
+                    <button class="link-btn" onclick="openModal('emailModal')">설정 방법 보기 →</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ⑤ 저장 버튼 -->
+          <button class="btn-primary-lg full-width" onclick="saveNotification()">
+            <i class="fas fa-save"></i> 알림 설정 저장하기
+          </button>
+
+          <!-- ⑥ 저장된 알림 목록 -->
+          <div class="notif-section" style="margin-top:16px;">
+            <div class="notif-section-title"><i class="fas fa-history"></i> 저장된 알림 설정</div>
+            <div id="savedAlertsList">
+              <div class="preview-empty small"><i class="fas fa-inbox"></i><p>저장된 알림이 없습니다</p></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── 오른쪽 미리보기 패널 ── -->
+        <div class="notification-preview-panel">
+          <div class="preview-header">
+            <i class="fas fa-eye"></i> 알림 미리보기
+            <span class="preview-count" id="previewCount"></span>
+          </div>
+          <div id="previewCards">
+            <div class="preview-empty">
+              <i class="fas fa-bell-slash"></i>
+              <p>착공일 입력 및 항목 선택 후<br>알림 메시지 미리보기가 표시됩니다</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- 토스트 알림 -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- 모달 오버레이 -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal()"></div>
+
+<!-- 텔레그램 설정 가이드 모달 -->
+<div class="modal" id="telegramModal">
+  <div class="modal-header">
+    <i class="fab fa-telegram-plane" style="color:#2CA5E0;"></i> 텔레그램 알림 설정 가이드
+    <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+  </div>
+  <div class="modal-body">
+    <div class="guide-step">
+      <div class="guide-step-num">1</div>
+      <div class="guide-step-content">
+        <strong>텔레그램 봇 생성</strong><br>
+        텔레그램에서 <code>@BotFather</code> 를 검색하여 대화를 시작합니다.<br>
+        <code>/newbot</code> 명령어를 입력하고 봇 이름과 username을 설정하면<br>
+        <span class="guide-highlight">Bot Token</span>이 발급됩니다. (예: <code>123456789:ABC-DEF1234ghIkl</code>)
+      </div>
+    </div>
+    <div class="guide-step">
+      <div class="guide-step-num">2</div>
+      <div class="guide-step-content">
+        <strong>Bot Token 입력</strong><br>
+        위에서 받은 Bot Token을 <strong>Bot Token 입력란</strong>에 붙여넣기 합니다.
+      </div>
+    </div>
+    <div class="guide-step">
+      <div class="guide-step-num">3</div>
+      <div class="guide-step-content">
+        <strong>Chat ID 확인</strong><br>
+        텔레그램에서 <code>@userinfobot</code> 을 검색하고 <code>/start</code> 를 보내면<br>
+        본인의 <span class="guide-highlight">Chat ID</span>를 확인할 수 있습니다.<br>
+        그룹 채팅의 경우 <code>@RawDataBot</code> 을 초대하여 그룹 ID 확인.
+      </div>
+    </div>
+    <div class="guide-step">
+      <div class="guide-step-num">4</div>
+      <div class="guide-step-content">
+        <strong>테스트 발송</strong><br>
+        Bot Token과 Chat ID 입력 후 <strong>"테스트 알림 발송"</strong> 버튼을 클릭하여<br>
+        연결 상태를 확인합니다. 텔레그램으로 메시지가 오면 설정 완료!
+      </div>
+    </div>
+    <div class="guide-code-box">
+      <div class="guide-code-title">전송되는 메시지 예시</div>
+      <pre>🔔 <b>[유해위험방지계획서]</b> 제출 기한이 <b>14일</b> 남았습니다.
+📅 제출 기한: 2026-05-01
+📝 제출처: 한국산업안전보건공단
+⚠️ 관련 법령: 산업안전보건법 제42조
+🏭 프로젝트: ○○제철 제4고로 신설공사</pre>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn-outline-sm" onclick="closeModal()">닫기</button>
+    <a href="https://t.me/BotFather" target="_blank" class="btn-primary-sm">
+      <i class="fab fa-telegram-plane"></i> BotFather 열기
+    </a>
+  </div>
+</div>
+
+<!-- 이메일 설정 가이드 모달 -->
+<div class="modal" id="emailModal">
+  <div class="modal-header">
+    <i class="fas fa-envelope" style="color:#EA4335;"></i> Google Apps Script 이메일 알림 가이드
+    <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+  </div>
+  <div class="modal-body">
+    <div class="guide-notice">
+      <i class="fas fa-info-circle"></i>
+      이메일 알림은 보안상 백엔드 서버가 필요합니다. Google Apps Script를 사용하면
+      무료로 자동 이메일 발송을 구현할 수 있습니다.
+    </div>
+    <div class="guide-step">
+      <div class="guide-step-num">1</div>
+      <div class="guide-step-content">
+        <strong>알림 일정 데이터 내보내기</strong><br>
+        알림 설정 후 <strong>"CSV 내보내기"</strong> 버튼을 클릭하여 알림 일정 파일을 다운로드합니다.<br>
+        이 파일을 Google Sheets에 업로드합니다.
+      </div>
+    </div>
+    <div class="guide-step">
+      <div class="guide-step-num">2</div>
+      <div class="guide-step-content">
+        <strong>Google Apps Script 연동</strong><br>
+        Google Sheets → 확장 프로그램 → Apps Script 열기<br>
+        아래 스크립트를 붙여넣고 이메일 주소를 수정합니다.
+      </div>
+    </div>
+    <div class="guide-code-box">
+      <div class="guide-code-title">Apps Script 예시 코드</div>
+      <pre>function checkAndSendAlerts() {
+  const sheet = SpreadsheetApp.getActiveSheet();
+  const data = sheet.getDataRange().getValues();
+  const today = new Date();
+  const email = "your@email.com"; // 수신 이메일
+
+  data.slice(1).forEach(row => {
+    const [project, item, deadline, submitTo, daysLeft] = row;
+    const dl = new Date(deadline);
+    const diff = Math.ceil((dl - today) / 86400000);
+    if ([30, 14, 7, 3, 1].includes(diff)) {
+      GmailApp.sendEmail(email,
+        `🔔 [SafeGuard] ${item} D-${diff} 알림`,
+        `프로젝트: ${project}\n항목: ${item}\n` +
+        `제출기한: ${deadline}\n제출처: ${submitTo}\n` +
+        `남은 기간: ${diff}일`
+      );
+    }
+  });
+}
+
+// 매일 오전 9시 트리거 설정:
+// 편집 → 트리거 → 함수: checkAndSendAlerts → 시간 기반 → 매일</pre>
+    </div>
+    <div class="guide-step">
+      <div class="guide-step-num">3</div>
+      <div class="guide-step-content">
+        <strong>자동 실행 트리거 설정</strong><br>
+        Apps Script 편집기 → 왼쪽 시계 아이콘(트리거) → 트리거 추가<br>
+        함수: <code>checkAndSendAlerts</code> / 이벤트 유형: <strong>시간 기반</strong> / 시간: <strong>매일 오전 9시</strong>
+      </div>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button class="btn-outline-sm" onclick="closeModal()">닫기</button>
+    <button class="btn-primary-sm" onclick="exportNotifCSV(); closeModal();">
+      <i class="fas fa-file-csv"></i> CSV 내보내기
+    </button>
+  </div>
+</div>
+
+<!-- JSA 재해사례 상세 모달 -->
+<div class="jsa-modal-overlay" id="jsaModalOverlay" onclick="closeJsaModal()" style="display:none;"></div>
+<div class="jsa-case-modal" id="jsaCaseModal" style="display:none;" role="dialog" aria-modal="true">
+  <div class="jsa-modal-inner">
+    <div class="jsa-modal-header">
+      <span><i class="fas fa-file-alt"></i> 재해사례 상세</span>
+      <button class="jsa-modal-close" onclick="closeJsaModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="jsa-modal-body" id="jsaCaseModalBody"></div>
+    <div class="jsa-modal-footer">
+      <button class="btn-outline-sm" onclick="closeJsaModal()"><i class="fas fa-times"></i> 닫기</button>
+    </div>
+  </div>
+</div>
+
+<!-- JS 파일 로드 -->
+<script src="js/theme.js"></script>
+<script src="js/constants.js"></script>
+<script src="js/law_api.js"></script>
+<script src="js/accident_db.js"></script>
+<script src="js/jsa_api.js"></script>
+<script src="js/jsa.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/data.js"></script>
+<script src="js/law_db.js"></script>
+<script src="js/guideline_db.js"></script>
+<script src="js/chatbot.js"></script>
+<script src="js/checklist.js"></script>
+<script src="js/notification.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

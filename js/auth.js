@@ -6,25 +6,27 @@
 /* ── 계정 정보 (하드코딩 단일 관리자) ── */
 const AUTH_ACCOUNT = { id: 'admin', pw: 'admin', name: '관리자' };
 
-/* ── sessionStorage 키 ── */
+/* ── 세션 키 ── */
 const SESSION_KEY = 'sg_session';
 
 /* ────────────────────────────────────────────
    세션 헬퍼
+   localStorage 사용: 브라우저를 닫았다 다시 열어도 로그인이 유지된다.
+   (기존 sessionStorage → 재접속 시 초기화되던 문제 해결)
 ──────────────────────────────────────────── */
 function authGetSession() {
   try {
-    const raw = sessionStorage.getItem(SESSION_KEY);
+    const raw = localStorage.getItem(SESSION_KEY);
     return raw ? JSON.parse(raw) : null;
   } catch { return null; }
 }
 
 function authSetSession(data) {
-  sessionStorage.setItem(SESSION_KEY, JSON.stringify(data));
+  localStorage.setItem(SESSION_KEY, JSON.stringify(data));
 }
 
 function authClearSession() {
-  sessionStorage.removeItem(SESSION_KEY);
+  localStorage.removeItem(SESSION_KEY);
 }
 
 function authIsLoggedIn() {
@@ -177,7 +179,8 @@ function authInit() {
     // 이미 로그인 → 앱 바로 시작
     hideLoginScreen();
     updateSidebarUserInfo();
-    // initApp 은 main.js DOMContentLoaded 에서 호출됨
+    // 앱 초기화를 여기서 직접 호출 (main.js 중복 리스너 제거로 순서 보장)
+    if (typeof initApp === 'function') initApp();
   } else {
     // 미로그인 → 로그인 화면
     showLoginScreen();

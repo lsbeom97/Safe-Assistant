@@ -205,7 +205,7 @@ function updateDashUpcomingList() {
             : (s.submitTo || '-');
           return `
             <tr class="${rc}">
-              <td style="text-align:center;font-weight:700;color:#1B3A5C;font-size:0.78rem;">${s.num || ''}</td>
+              <td style="text-align:center;font-weight:700;color:var(--text-heading);font-size:0.78rem;">${s.num || ''}</td>
               <td>
                 <div class="schedule-name ${s.isDone ? 'done-text' : ''}">${s.name}</div>
                 <div class="schedule-project">${alertSettings.projectName || ''}</div>
@@ -292,7 +292,7 @@ function updateDashCategoryList() {
           ${sel > 0 ? `<div class="cat-stat-bar" style="position:absolute;left:0;width:${selPct}%;background:${color};"></div>` : ''}
         </div>
         <div class="cat-stat-num">
-          <span style="color:${color};font-weight:700;">${cnt}</span>개
+          <span style="color:var(--text-heading);font-weight:700;">${cnt}</span>개
           ${sel > 0 ? `<span class="cat-sel-badge" style="background:${color}20;color:${color};">${sel}선택</span>` : ''}
           ${done > 0 ? `<span class="cat-done-badge">${done}완료</span>` : ''}
           ${urg > 0 ? `<span class="cat-urg-badge">${urg}긴급</span>` : ''}
@@ -392,7 +392,7 @@ function updateDashTimeline() {
     return `
       <div class="gantt-row">
         <div class="gantt-label">
-          <span class="gantt-num" style="color:${color};">${s.num || ''}</span>
+          <span class="gantt-num" style="color:var(--text-heading);">${s.num || ''}</span>
           <span class="gantt-name ${isDone ? 'gantt-name-done' : ''}" title="${s.name}">${nameShort}</span>
           ${isDone ? '<i class="fas fa-check-circle" style="color:#27AE60;font-size:0.62rem;"></i>' : ''}
         </div>

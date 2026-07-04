@@ -298,7 +298,12 @@ function checkSchemaVersion() {
 /* ──────────────────────────────────────────
    앱 초기화
 ────────────────────────────────────────── */
+let __sgAppInited = false;
 function initApp() {
+  // 중복 초기화 방지 (auth.js 와 DOMContentLoaded 이중 호출 대비)
+  if (__sgAppInited) return;
+  __sgAppInited = true;
+
   // 스키마 버전 체크 (호환성 깨지면 자동 정리)
   checkSchemaVersion();
 
@@ -390,13 +395,8 @@ document.addEventListener('keydown', function(e) {
 });
 
 // ---- DOM 로드 시 실행 ----
-// auth.js 가 먼저 로드되어 authIsLoggedIn() 을 정의하므로,
-// 이미 로그인 세션이 있을 때만 initApp 을 직접 호출한다.
-// 미로그인 상태라면 auth.js 의 authInit() → showLoginScreen() 이 처리하고,
-// 로그인 성공 후 handleLoginSubmit() 에서 initApp() 을 호출한다.
-document.addEventListener('DOMContentLoaded', function () {
-  if (typeof authIsLoggedIn === 'function' && authIsLoggedIn()) {
-    initApp();
-  }
-  // 미로그인 → auth.js 가 로그인 화면 표시 (별도 처리 불필요)
-});
+// 초기화 진입점은 auth.js 의 authInit() 하나로 일원화한다.
+// (auth.js 가 DOMContentLoaded 에서 authInit() 을 호출하고,
+//  로그인되어 있으면 그 안에서 initApp() 을 실행한다.)
+// 여기서 initApp 을 중복 호출하지 않는다 → 경쟁조건 제거.
+// initApp() 은 __sgAppInited 가드로 이중 실행이 방지되어 있으므로 안전하다.

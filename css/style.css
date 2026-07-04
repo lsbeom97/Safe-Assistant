@@ -6504,3 +6504,16 @@ button .fa-spinner,
 /* 범례 텍스트가 짙은 카테고리색이라 안 보이는 경우 → 기본 밝은색(색 구분은 점/막대로) */
 [data-theme="dark"] .legend-item { color: var(--text-primary); }
 [data-theme="dark"] .nav-item.active .nav-desc { color: rgba(255,255,255,0.85); }
+
+/* =====================================================================
+   프로젝트 선택 바 (다중 프로젝트 · 클라우드 동기화)
+   ===================================================================== */
+.sg-project-bar { display:flex; align-items:center; gap:8px; padding:8px 24px; background:var(--bg-card); border-bottom:1px solid var(--gray-200); font-size:0.85rem; flex-wrap:wrap; }
+.sg-project-bar:empty { display:none; }
+.sg-project-bar select { padding:5px 10px; border:1px solid var(--gray-300); border-radius:6px; background:var(--bg-input); color:var(--text-primary); font-size:0.85rem; max-width:260px; font-weight:600; }
+.sg-proj-btn { border:1px solid var(--gray-300); background:var(--bg-input); color:var(--text-sub); width:30px; height:30px; border-radius:6px; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; }
+.sg-proj-btn:hover { background:var(--bg-card-hover); color:var(--primary); }
+.sg-sync { margin-left:auto; font-size:0.75rem; color:var(--text-sub); white-space:nowrap; }
+[data-theme="dark"] .sg-project-bar { border-bottom-color:rgba(255,255,255,0.08); }
+[data-theme="dark"] .sg-project-bar select,
+[data-theme="dark"] .sg-proj-btn { border-color:rgba(255,255,255,0.15); }

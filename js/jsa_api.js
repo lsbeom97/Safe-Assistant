@@ -296,15 +296,15 @@ function isMetaLine(line) {
   // [관리3, 안전1, 작업N] 형태
   if (/^\[(관리|안전|감독|책임|기계|제관|비계|화재|신호|실장)\d/.test(line)) return true;
   // [취약작업자 : ...] 라인
-  if (/^\[취약작업자/.test(line)) return true;
+  if (/^\[?취약작업자/.test(line)) return true;
   // 업체명 + 숫자명 라인 (예: 동진건설 18명)
   if (/^[가-힣]{2,8}\s+\d+명$/.test(line)) return true;
 
   // ── 장비/부가정보 라인 ──
-  // 장비: 50톤 크레인... 라인
-  if (/^장비\s*[:：]/.test(line)) return true;
-  // ○ 계약명 / ○ 작업시간 / ○ 작업내용 세부항목
-  if (/^[○◇]\s*(계\s*약\s*명|작업시간|작업내용|작업인원|안전수칙|투입인원)/.test(line)) return true;
+  // 장비 / 투입장비 / 사용장비 (1) : 지게차·크레인 등 → 장비는 '작업'이 아님
+  if (/^[○◇▶\-]?\s*(투입|사용|동원|주요)?\s*장비\s*(\(\d+\))?\s*[:：]/.test(line)) return true;
+  // 계약명 / 공사명 / 작업시간 / 작업내용 / 작업인원 / 안전수칙 등 부가항목 (○ 유무 무관)
+  if (/^[○◇▶\-]?\s*(계\s*약\s*명|공\s*사\s*명|작업\s*시간|작업\s*내용|작업\s*인원|투입\s*인원|안전\s*수칙|주요\s*내용|현\s*황)\s*[:：]/.test(line)) return true;
 
   // ── 헤더 라인 ──
   if (/^\[.{2,20}(일일\s*작업속보|작업속보)/.test(line)) return true;
@@ -391,8 +391,10 @@ function parseWorkBulletin(text) {
     // 인원 구성 메타
     if (/^\[(관리|안전|감독|기계|제관|비계|화재|신호)/.test(n)) return false;
     if (/^\[취약/.test(n)) return false;
-    // 장비 라인
-    if (/^장비\s*[:：]/.test(n)) return false;
+    // 장비 라인 (장비 / 투입장비 (1) : 지게차 등)
+    if (/^(투입|사용|동원|주요)?\s*장비\s*(\(\d+\))?\s*[:：]/.test(n)) return false;
+    // 계약명 / 공사명 / 취약작업자 / 작업시간 등 부가항목
+    if (/^(계\s*약\s*명|공\s*사\s*명|취약작업자|작업\s*시간|작업\s*내용|안전\s*수칙)\s*[:：]?/.test(n)) return false;
     // 업체명+인원 라인
     if (/^[가-힣]{2,8}\s+\d+명$/.test(n)) return false;
     return n.length >= 2;

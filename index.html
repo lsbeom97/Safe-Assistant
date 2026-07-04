@@ -18,7 +18,9 @@
 <body>
 
 <!-- ===== 로그인 화면 ===== -->
-<div id="loginScreen" style="display:none;">
+<!-- display 인라인 스타일 제거: CSS(#loginScreen{display:flex})로 기본 표시.
+     JS가 실행되지 않아도 로그인 화면이 보이도록 함 (GitHub Pages 빈 화면 버그 수정) -->
+<div id="loginScreen">
   <div class="login-bg">
     <!-- 배경 장식 원 -->
     <div class="login-bg-circle login-bg-circle1"></div>
@@ -88,7 +90,7 @@
 <div class="logout-modal" id="logoutConfirmModal">
   <div class="logout-modal-icon"><i class="fas fa-sign-out-alt"></i></div>
   <h3 class="logout-modal-title">로그아웃</h3>
-  <p class="logout-modal-desc">로그아웃 하시겠습니까?<br><small>브라우저를 닫으면 세션이 자동 만료됩니다.</small></p>
+  <p class="logout-modal-desc">로그아웃 하시겠습니까?<br><small>로그아웃하기 전까지 로그인 상태가 유지됩니다.</small></p>
   <div class="logout-modal-btns">
     <button class="logout-cancel-btn" onclick="cancelLogout()">취소</button>
     <button class="logout-confirm-btn" onclick="executeLogout()"><i class="fas fa-sign-out-alt"></i> 로그아웃</button>
@@ -100,6 +102,22 @@
 
 <!-- 전체 레이아웃 -->
 <div class="app-layout" id="appLayout" style="display:none;">
+
+<!-- 로그인 세션에 따라 초기 화면을 즉시 결정 (첫 페인트 전 실행 → 깜빡임 방지).
+     JS가 죽어도 위 로그인 화면은 CSS로 표시되므로 최소한 로그인은 항상 보인다. -->
+<script>
+  (function(){
+    try {
+      var s = JSON.parse(localStorage.getItem('sg_session') || 'null');
+      if (s && s.loggedIn === true) {
+        var login = document.getElementById('loginScreen');
+        var app   = document.getElementById('appLayout');
+        if (login) login.style.display = 'none';
+        if (app)   app.style.display = 'flex';
+      }
+    } catch (e) {}
+  })();
+</script>
 
   <!-- ===== 사이드바 ===== -->
   <aside class="sidebar" id="sidebar">
@@ -799,11 +817,15 @@
               <option value="고로신설">고로 신설</option>
               <option value="고로개수">고로 개수(릴라이닝)</option>
               <option value="열풍로신설보수">열풍로 신설·보수</option>
+              <option value="열풍로노후교체">열풍로 노후설비 교체</option>
               <option value="소결설비신설증설">소결설비 신설·증설</option>
+              <option value="소결설비노후교체">소결설비 노후설비 교체</option>
               <option value="코크스설비신설증설">코크스설비 신설·증설</option>
+              <option value="코크스설비노후교체">코크스설비 노후설비 교체</option>
               <option value="가스정제설비교체증설">가스정제설비 교체·증설</option>
               <option value="부생가스배관설치교체">부생가스 배관 설치·교체</option>
               <option value="원료처리설비증설">원료처리설비 증설</option>
+              <option value="원료처리설비노후교체">원료처리설비 노후설비 교체</option>
               <option value="기타부대설비">기타 부대설비</option>
             </select>
           </div>

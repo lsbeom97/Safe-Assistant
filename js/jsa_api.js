@@ -322,6 +322,17 @@ function isWorkStartLine(line) {
   return content.length >= 2;
 }
 
+// 한 줄에서 작업장소/작업시간/작업인원을 추출해 current에 채운다 (미설정 시에만)
+function extractWorkFields(line, current) {
+  if (!current) return;
+  const t = line.match(/(\d{1,2}:\d{2})\s*[~\-]\s*(\d{1,2}:\d{2})/);
+  if (t && !current.작업시간) current.작업시간 = t[1] + '~' + t[2];
+  const l = line.match(/(?:장소|위치|현장)\s*[:：]?\s*([^,\n]{2,30})/);
+  if (l && !current.작업장소) current.작업장소 = l[1].trim();
+  const p = line.match(/인원\s*[:：]?\s*(\d+)|(\d+)\s*명/);
+  if (p && !current.작업인원) current.작업인원 = parseInt(p[1] || p[2] || 0);
+}
+
 function parseWorkBulletin(text) {
   const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
   const works = [];
@@ -350,24 +361,11 @@ function parseWorkBulletin(text) {
         작업시간: '',
         rawLines: [line],
       };
+      // 작업 시작 줄 자체에서도 장소/시간/인원 추출 (같은 줄에 붙은 경우)
+      extractWorkFields(line, current);
     } else if (current) {
       current.rawLines.push(line);
-
-      // 장소 추출
-      const locMatch = line.match(locationPattern);
-      if (locMatch && !current.작업장소) current.작업장소 = locMatch[1].trim();
-
-      // 시간 추출
-      const timeMatch = line.match(timePattern);
-      if (timeMatch && !current.작업시간) {
-        current.작업시간 = `${timeMatch[1]}~${timeMatch[2]}`;
-      }
-
-      // 인원 추출 (작업속보 본문의 인원수)
-      const personMatch = line.match(personPattern);
-      if (personMatch && !current.작업인원) {
-        current.작업인원 = parseInt(personMatch[1] || personMatch[2] || 0);
-      }
+      extractWorkFields(line, current);
     } else {
       // 첫 작업 자동 시작 (총괄 텍스트)
       if (line.length > 5 && !line.startsWith('//') && !isMetaLine(line)) {
@@ -424,14 +422,22 @@ function isLikelyNewWork(line, prevLine) {
 }
 
 function extractWorkName(line) {
-  return line
+  let s = line
     .replace(/^\d+[.)]\s*/, '')
     .replace(/^[①②③④⑤⑥⑦⑧⑨⑩]\s*/, '')
-    .replace(/^[■●▶◆○-]\s*/, '')
-    .replace(/\(\d{1,2}:\d{2}.*?\)/, '')
-    .replace(/\s*\d+\s*명.*$/, '')
-    .trim()
-    .slice(0, 70) || '작업';
+    .replace(/^[■●▶◆○\-]\s*/, '');
+  // 시간/장소/위치/현장/인원 표기가 시작되는 지점에서 작업명을 끊어
+  // 순수한 '작업' 부분만 인식한다 (부가정보가 작업명에 섞이는 문제 해결)
+  const cutters = [
+    /\s*\(?\d{1,2}:\d{2}\s*[~\-]/,
+    /\s*[,·]?\s*(장소|위치|현장)\s*[:：]/,
+    /\s*[,·]?\s*인원\s*[:：]?\s*\d/,
+    /\s*\d+\s*명/
+  ];
+  let cut = s.length;
+  for (const re of cutters) { const m = s.match(re); if (m && m.index < cut) cut = m.index; }
+  s = s.slice(0, cut).replace(/[\s,·(（]+$/, '').trim();
+  return s.slice(0, 70) || '작업';
 }
 
 /* =====================================================

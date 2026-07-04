@@ -309,6 +309,12 @@ function isMetaLine(line) {
   // ── 헤더 라인 ──
   if (/^\[.{2,20}(일일\s*작업속보|작업속보)/.test(line)) return true;
 
+  // ── 공사/프로젝트 제목 (일일 작업이 아님) ──
+  // 예: "(광양) 2고로 2차개수", "(포항) 3고로 개수공사"
+  if (/^\([가-힣0-9\s]{1,10}\)\s*\S/.test(line) && /(고로|전로|연주|소결|코크스|열풍로|제강|제선|개수|릴라이닝|신설|증설|공사)/.test(line)) return true;
+  // 프로젝트명 어미로 끝나는 제목 (…차개수 / …릴라이닝 / …신설공사 등)
+  if (/(차\s*개수|릴라이닝|신설공사|증설공사|정비공사|보수공사|개수공사|대수리)\s*$/.test(line)) return true;
+
   return false;
 }
 
@@ -332,6 +338,9 @@ function extractWorkFields(line, current) {
   const p = line.match(/인원\s*[:：]?\s*(\d+)|(\d+)\s*명/);
   if (p && !current.작업인원) current.작업인원 = parseInt(p[1] || p[2] || 0);
 }
+
+// 번호 없는 줄을 '작업'으로 인정하기 위한 작업 동작 키워드
+const SG_WORK_KEYWORDS = /작업|점검|교체|해체|설치|정비|보수|용접|절단|청소|운반|이설|조립|시공|타설|굴착|도장|배관|결선|시운전|검사|양중|인양|하역|철거|세정|살수|그라인딩|발파|콘크리트|시험|가동|충전|배수|주입|취부/;
 
 function parseWorkBulletin(text) {
   const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
@@ -368,7 +377,7 @@ function parseWorkBulletin(text) {
       extractWorkFields(line, current);
     } else {
       // 첫 작업 자동 시작 (총괄 텍스트)
-      if (line.length > 5 && !line.startsWith('//') && !isMetaLine(line)) {
+      if (line.length > 5 && !line.startsWith('//') && !isMetaLine(line) && SG_WORK_KEYWORDS.test(line)) {
         current = {
           순번: 1,
           작업명: extractWorkName(line),

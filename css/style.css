@@ -6483,3 +6483,24 @@ button .fa-spinner,
   .jsa-work-card-header { flex-direction: column; align-items: flex-start; }
   .jsa-work-card-right { width: 100%; justify-content: space-between; }
 }
+
+/* =====================================================================
+   야간모드(다크) 가시성 보정 — v5.7
+   실측 대비(WCAG contrast) 점검 기반: 흰 배경 잔존 박스, 검은 뱃지,
+   select 옵션(흰글씨=흰배경), 짙은 카테고리색 글씨를 읽히도록 보정.
+   ===================================================================== */
+[data-theme="dark"] .channel-input,
+[data-theme="dark"] #savedAlertsList,
+[data-theme="dark"] #previewCards { background: var(--bg-input); }
+[data-theme="dark"] .channel-input { border-top-color: rgba(255,255,255,0.08); }
+[data-theme="dark"] .email-notice { background: rgba(0,165,229,0.10); color: rgba(255,255,255,0.72); }
+[data-theme="dark"] .preview-empty { color: rgba(255,255,255,0.5); }
+/* select 드롭다운 옵션 */
+[data-theme="dark"] select option,
+[data-theme="dark"] select.form-input option,
+[data-theme="dark"] .filter-select option { background-color: #1B2838; color: rgba(255,255,255,0.88); }
+/* 마감임박 뱃지 검은 글씨 → 밝게 */
+[data-theme="dark"] .urgent-badge { color: #FFD24C; }
+/* 범례 텍스트가 짙은 카테고리색이라 안 보이는 경우 → 기본 밝은색(색 구분은 점/막대로) */
+[data-theme="dark"] .legend-item { color: var(--text-primary); }
+[data-theme="dark"] .nav-item.active .nav-desc { color: rgba(255,255,255,0.85); }

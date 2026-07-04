@@ -45,12 +45,12 @@
       <!-- 폼 -->
       <form class="login-form" onsubmit="handleLoginSubmit(event)">
         <div class="login-field">
-          <label class="login-label"><i class="fas fa-user"></i> 아이디</label>
+          <label class="login-label"><i class="fas fa-envelope"></i> 이메일</label>
           <input
-            type="text"
+            type="email"
             id="loginId"
             class="login-input"
-            placeholder="아이디를 입력하세요"
+            placeholder="이메일을 입력하세요"
             autocomplete="username"
             spellcheck="false"
           />
@@ -78,6 +78,10 @@
         <button type="submit" class="login-btn" id="loginBtn">
           <i class="fas fa-sign-in-alt"></i> 로그인
         </button>
+        <p class="login-mode-hint" id="loginModeHint" style="margin-top:12px;text-align:center;font-size:.8rem;opacity:.7;">가입한 이메일과 비밀번호로 로그인하세요.</p>
+        <div style="text-align:center;margin-top:6px;">
+          <a href="#" id="authToggleLink" onclick="authToggleMode();return false;" style="font-size:.82rem;color:var(--accent);text-decoration:none;">처음이신가요? 회원가입</a>
+        </div>
       </form>
 
       <div class="login-footer">© 2026 SafeGuard Pro · 제선·고로 특화 v5.0</div>
@@ -102,22 +106,6 @@
 
 <!-- 전체 레이아웃 -->
 <div class="app-layout" id="appLayout" style="display:none;">
-
-<!-- 로그인 세션에 따라 초기 화면을 즉시 결정 (첫 페인트 전 실행 → 깜빡임 방지).
-     JS가 죽어도 위 로그인 화면은 CSS로 표시되므로 최소한 로그인은 항상 보인다. -->
-<script>
-  (function(){
-    try {
-      var s = JSON.parse(localStorage.getItem('sg_session') || 'null');
-      if (s && s.loggedIn === true) {
-        var login = document.getElementById('loginScreen');
-        var app   = document.getElementById('appLayout');
-        if (login) login.style.display = 'none';
-        if (app)   app.style.display = 'flex';
-      }
-    } catch (e) {}
-  })();
-</script>
 
   <!-- ===== 사이드바 ===== -->
   <aside class="sidebar" id="sidebar">
@@ -267,6 +255,9 @@
         <div class="user-badge"><i class="fas fa-user-circle"></i> 관리자</div>
       </div>
     </header>
+
+    <!-- ===== 프로젝트 선택 바 (다중 프로젝트 · 클라우드 동기화) ===== -->
+    <div class="sg-project-bar" id="sgProjectBar"></div>
 
     <!-- ===== 페이지 컨테이너들 ===== -->
 
@@ -1244,6 +1235,11 @@
 </div>
 
 <!-- JS 파일 로드 -->
+<!-- Firebase SDK (compat) - 클라우드 로그인/저장 -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
 <script src="js/theme.js"></script>
 <script src="js/constants.js"></script>
 <script src="js/law_api.js"></script>
@@ -1259,5 +1255,6 @@
 <script src="js/notification.js"></script>
 <script src="js/dashboard.js"></script>
 <script src="js/main.js"></script>
+<script src="js/cloud.js"></script>
 </body>
 </html>

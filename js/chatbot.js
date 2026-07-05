@@ -515,7 +515,7 @@ function buildGuidelineResponse(results) {
     </div>`;
   });
 
-  html += `<div class="msg-source">[출처] SafeGuard Pro 유권해석 AI v3.1 | DB: 고용노동부 10건 + KOSHA 10건</div>`;
+  html += `<div class="msg-source">[출처] SafeGuard Pro 유권해석 AI v3.1 | DB: 제철 특화 유권해석·가이드 ${(typeof GUIDELINE_DATABASE!=='undefined'?GUIDELINE_DATABASE.length:0)}건</div>`;
   return html;
 }
 
@@ -551,7 +551,7 @@ function buildGuidelineNotFoundResponse(query, category) {
         </a>
       </div>
     </div>
-    <div class="msg-source">[출처] SafeGuard Pro 유권해석 AI v3.1 | DB: 고용노동부 10건 + KOSHA 10건</div>`;
+    <div class="msg-source">[출처] SafeGuard Pro 유권해석 AI v3.1 | DB: 제철 특화 유권해석·가이드 ${(typeof GUIDELINE_DATABASE!=='undefined'?GUIDELINE_DATABASE.length:0)}건</div>`;
 }
 
 /* ─────────────────────────────────────────────
@@ -579,13 +579,13 @@ function buildLawWelcomeMsg() {
   return `
     <p>안녕하세요! 저는 <strong>SafeGuard AI 법령 상담사</strong>입니다.</p>
     <p>법제처 국가법령정보 <strong>실시간 API</strong>를 통해 최신 조문을 검색하고,
-    API 연결 불가 시에는 오프라인 DB(<strong>40개 조문</strong>)로 자동 전환됩니다.</p>
+    API 연결 불가 시에는 오프라인 DB(<strong>${(typeof LAW_DATABASE!=='undefined'?LAW_DATABASE.length:0)}개 조문</strong>)로 자동 전환됩니다.</p>
     <p>궁금하신 법령 조문을 입력하시거나, 오른쪽 <strong>자주 묻는 질문</strong>을 클릭해보세요.</p>
     <div class="welcome-db-info">
       <div class="db-info-item"><i class="fas fa-satellite-dish"></i> 중대재해처벌법 (실시간)</div>
       <div class="db-info-item"><i class="fas fa-satellite-dish"></i> 산업안전보건법·시행령·시행규칙 (실시간)</div>
       <div class="db-info-item"><i class="fas fa-satellite-dish"></i> 건설기술진흥법 (실시간)</div>
-      <div class="db-info-item"><i class="fas fa-database"></i> 오프라인 백업 DB: 40개 조문</div>
+      <div class="db-info-item"><i class="fas fa-database"></i> 오프라인 백업 DB: ${(typeof LAW_DATABASE!=='undefined'?LAW_DATABASE.length:0)}개 조문</div>
     </div>
     <div class="welcome-search-tips">
       <span class="tip-chip"><i class="fas fa-bolt"></i> 실시간 API 검색</span>
@@ -601,8 +601,7 @@ function buildLawWelcomeMsg() {
 function buildGuidelineWelcomeMsg() {
   return `
     <p>안녕하세요! <strong>인허가 가이드라인 상담 AI</strong>입니다.</p>
-    <p>고용노동부 유권해석 <strong>10건</strong>, 한국산업안전보건공단(KOSHA) 가이드라인 <strong>10건</strong>,
-    총 <strong>20건</strong>의 실무 유권해석 데이터를 기반으로 답변해 드립니다.</p>
+    <p>고용노동부·KOSHA·환경부·소방청 등 <strong>제철 인허가·안전 실무 유권해석과 가이드라인 ${(typeof GUIDELINE_DATABASE!=='undefined'?GUIDELINE_DATABASE.length:0)}건</strong>을 기반으로 답변해 드립니다.</p>
     <p>카테고리 필터와 키워드 검색을 결합한 <strong>하이브리드 검색</strong>으로 정확한 결과를 찾아드립니다.</p>
     <div class="guideline-format">
       <span class="format-tag summary"><i class="fas fa-question-circle"></i> 질의 요지</span>
@@ -610,8 +609,8 @@ function buildGuidelineWelcomeMsg() {
       <span class="format-tag caution"><i class="fas fa-exclamation-triangle"></i> 실무 주의사항</span>
     </div>
     <div class="welcome-db-info">
-      <div class="db-info-item"><i class="fas fa-stamp"></i> 고용노동부 유권해석 10건</div>
-      <div class="db-info-item"><i class="fas fa-shield-alt"></i> KOSHA 가이드라인 10건</div>
+      <div class="db-info-item"><i class="fas fa-stamp"></i> 유권해석·가이드 ${(typeof GUIDELINE_DATABASE!=='undefined'?GUIDELINE_DATABASE.length:0)}건 (제철 특화)</div>
+      <div class="db-info-item"><i class="fas fa-shield-alt"></i> 고용노동부·KOSHA·환경부·소방청 등</div>
     </div>
     <div class="msg-source">[시스템] 유권해석 DB v3.1 | 기준일: 2026.01.01 | 출처: 고용노동부, KOSHA</div>`;
 }

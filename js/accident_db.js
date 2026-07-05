@@ -946,5 +946,247 @@ const ACCIDENT_CASES = [
         ]
       }
     ]
+  },
+
+  /* ===== 2026.07 추가: 제철·철강업 실제 재해사례 서칭 반영 (ID 25~44) ===== */
+  {
+    id: 25, date: '2013-05-10', workplace: '제철소 제2제강 전로 보수현장', workType: '전로 작업', workLocation: '전로',
+    accidentType: '질식', cause: '전로 내부 아르곤 퍼징 상태에서 산소 측정 없이 진입, 산소결핍으로 질식',
+    victims: { death: 5, serious: 0, minor: 0 },
+    preventiveMeasures: '밀폐공간 산소농도 측정(18% 이상 확인), 강제환기, 감시인 배치, 송기마스크 착용',
+    relatedLaw: '산업안전보건기준에 관한 규칙 제619조~제623조(밀폐공간)', environmentFactors: ['밀폐공간','산소결핍','고온(200℃ 이상)'],
+    jsaSteps: [
+      { step: '작업 전 준비', hazards: ['아르곤 잔류로 산소결핍','측정 미실시'], riskLevel: '매우높음', controls: ['산소 18~23.5% 확인','강제환기 실시','밀폐공간 작업허가서 발급'] },
+      { step: '본 작업 수행', hazards: ['산소농도 급락','구조 지연'], riskLevel: '매우높음', controls: ['연속 산소 모니터링','감시인 상시 배치','2인1조 및 구조장비 대기'] },
+      { step: '작업 후 정리', hazards: ['잔류 불활성가스'], riskLevel: '높음', controls: ['환기 후 밀폐','작업자 전원 퇴출 확인'] }
+    ]
+  },
+  {
+    id: 26, date: '2022-11-08', workplace: '제철소 제1고로 개수(릴라이닝) 현장', workType: '해체/정비 작업', workLocation: '고로',
+    accidentType: '질식', cause: '고로 노체 내부 내화물 해체 중 산소결핍 및 잔류 CO 중독',
+    victims: { death: 1, serious: 1, minor: 0 },
+    preventiveMeasures: '노체 진입 전 가스·산소 측정, 국소배기, 송기마스크, 감시인 배치',
+    relatedLaw: '산업안전보건기준에 관한 규칙 제618조~제623조(밀폐공간)', environmentFactors: ['밀폐공간','산소결핍','유해가스(CO/H2S 등)','분진','고온(200℃ 이상)'],
+    jsaSteps: [
+      { step: '작업 전 준비', hazards: ['잔류 CO','산소결핍','분진'], riskLevel: '매우높음', controls: ['CO 25ppm 이하·산소 18% 이상 확인','강제환기 30분 이상','송기마스크 지급'] },
+      { step: '본 작업 수행', hazards: ['해체 분진','상부 낙하물'], riskLevel: '높음', controls: ['연속 가스 모니터링','방진마스크','상하 동시작업 금지'] },
+      { step: '작업 후 정리', hazards: ['잔재물 붕괴'], riskLevel: '보통', controls: ['잔재물 안정성 확인','가스 재측정'] }
+    ]
+  },
+  {
+    id: 27, date: '2010-09-07', workplace: '제철소 전기로 상부 작업대', workType: '고소 작업', workLocation: '옥상/고소',
+    accidentType: '추락', cause: '1600℃ 전기로 상부에서 발판 헛디딤, 안전난간·안전대 미비로 추락',
+    victims: { death: 1, serious: 0, minor: 0 },
+    preventiveMeasures: '전기로 상부 안전난간·개구부 덮개 설치, 안전대 착용, 고온부 접근통제',
+    relatedLaw: '산업안전보건기준에 관한 규칙 제42조·제43조(추락 방지)', environmentFactors: ['고소','고온(200℃ 이상)'],
+    jsaSteps: [
+      { step: '작업 전 준비', hazards: ['개구부 노출','고온 표면'], riskLevel: '매우높음', controls: ['개구부 덮개·안전난간 설치','안전대 부착설비 확인','방열복 착용'] },
+      { step: '본 작업 수행', hazards: ['실족 추락','열기'], riskLevel: '매우높음', controls: ['안전대 이중 체결','2인1조','고온부 접근 통제선'] },
+      { step: '작업 후 정리', hazards: ['잔류 발판 미고정'], riskLevel: '보통', controls: ['가설발판 정리','안전시설 원복 확인'] }
+    ]
+  },
+  {
+    id: 28, date: '2019-02-20', workplace: '제철소 출선장(고로 출선구)', workType: '고로 작업', workLocation: '고로',
+    accidentType: '화상', cause: '출선구 개공 작업 중 용선(쇳물) 비산으로 화상',
+    victims: { death: 0, serious: 2, minor: 1 },
+    preventiveMeasures: '개공 시 안전거리 확보, 방열복·안면보호구 착용, 수분 유입 차단',
+    relatedLaw: '산업안전보건기준에 관한 규칙 제17조·제247조(화상·용융물)', environmentFactors: ['고온(200℃ 이상)','위험물'],
+    jsaSteps: [
+      { step: '작업 전 준비', hazards: ['출선구 잔류물','설비 수분'], riskLevel: '높음', controls: ['개공기 원격 조작','작업구역 건조 확인','방열복·보안면 착용'] },
+      { step: '본 작업 수행', hazards: ['용선 비산','스플래시'], riskLevel: '매우높음', controls: ['안전거리 확보','비산 방지커버','하부 통제'] },
+      { step: '작업 후 정리', hazards: ['고온 잔류물'], riskLevel: '보통', controls: ['냉각 확인 후 접근','잔재물 처리'] }
+    ]
+  },
+  {
+    id: 29, date: '2021-07-14', workplace: '제철소 코크스로 상부', workType: '코크스로 작업', workLocation: '코크스로',
+    accidentType: '화상', cause: '코크스로 상부 고온부 작업 중 열사병 및 접촉 화상',
+    victims: { death: 0, serious: 1, minor: 2 },
+    preventiveMeasures: '고온작업 휴식시간 준수, 냉방·이온음료 제공, 방열장갑 착용',
+    relatedLaw: '산업안전보건기준에 관한 규칙 제558조·제571조(고열장해 예방)', environmentFactors: ['고온(200℃ 이상)','유해가스(CO/H2S 등)','분진'],
+    jsaSteps: [
+      { step: '작업 전 준비', hazards: ['고온 노출','탈수'], riskLevel: '높음', controls: ['열사병 예방교육','냉수·그늘막 준비','방열복 착용'] },
+      { step: '본 작업 수행', hazards: ['고온 표면 접촉','가스 노출'], riskLevel: '높음', controls: ['20분 작업/10분 휴식','방열장갑','가스농도 확인'] },
+      { step: '작업 후 정리', hazards: ['탈진'], riskLevel: '보통', controls: ['휴식·수분 보충','건강상태 확인'] }
+    ]
+  },
+  {
+    id: 30, date: '2020-05-22', workplace: '제철소 열연 압연라인', workType: '압연 작업', workLocation: '압연기',
+    accidentType: '끼임', cause: '가동 중인 압연롤 사이 이물 제거 시도 중 손·팔 끼임',
+    victims: { death: 1, serious: 0, minor: 0 },
+    preventiveMeasures: '정비 시 전원차단·잠금(LOTO), 회전체 방호덮개, 운전 중 접근금지',
+    relatedLaw: '산업안전보건기준에 관한 규칙 제20조·제92조(정비 시 운전정지)', environmentFactors: ['회전체','중량물','소음'],
+    jsaSteps: [
+      { step: '작업 전 준비', hazards: ['가동 중 롤','전원 미차단'], riskLevel: '매우높음', controls: ['LOTO 시행','정지 확인','작업허가서'] },
+      { step: '본 작업 수행', hazards: ['회전체 말림'], riskLevel: '매우높음', controls: ['운전 중 절대 접근금지','방호덮개 유지','2인 신호 확인'] },
+      { step: '작업 후 정리', hazards: ['재가동 시 잔류위험'], riskLevel: '높음', controls: ['전원인가 전 인원 안전위치 확인','방호장치 원복'] }
+    ]
+  },
+  {
+    id: 31, date: '2018-12-03', workplace: '제철소 제강공장 크레인 작업구역', workType: '크레인 작업', workLocation: '기타',
+    accidentType: '기타', cause: '천장크레인 인양물(레이들 부속) 낙하로 하부 작업자 깔림',
+    victims: { death: 1, serious: 1, minor: 0 },
+    preventiveMeasures: '인양물 하부 출입금지, 줄걸이·샤클 점검, 신호수 배치, 정격하중 준수',
+    relatedLaw: '산업안전보건기준에 관한 규칙 제163조~제171조(양중기·낙하)', environmentFactors: ['중량물'],
+    jsaSteps: [
+      { step: '작업 전 준비', hazards: ['줄걸이 결함','과부하'], riskLevel: '높음', controls: ['와이어·샤클 점검','정격하중 확인','신호수 지정'] },
+      { step: '본 작업 수행', hazards: ['인양물 낙하','충돌'], riskLevel: '매우높음', controls: ['하부 통제선 설치','인양물 밑 통과 금지','서행 운반'] },
+      { step: '작업 후 정리', hazards: ['적치 불안정'], riskLevel: '보통', controls: ['적치 안정성 확인','크레인 정지'] }
+    ]
+  },
+  {
+    id: 32, date: '2021-04-16', workplace: '제철소 설비 증설현장', workType: '크레인 작업', workLocation: '야적장',
+    accidentType: '기타', cause: '이동식 크레인 붐 해체작업 중 붐대 낙하·깔림',
+    victims: { death: 1, serious: 0, minor: 0 },
+    preventiveMeasures: '해체 작업계획서 작성, 지지대 설치, 작업반경 통제, 자격 운전원 배치',
+    relatedLaw: '산업안전보건기준에 관한 규칙 제38조·제146조(작업계획서·차량계 건설기계)', environmentFactors: ['중량물'],
+    jsaSteps: [
+      { step: '작업 전 준비', hazards: ['지반 침하','계획 미수립'], riskLevel: '높음', controls: ['작업계획서 작성','아웃트리거·받침 설치','지반 확인'] },
+      { step: '본 작업 수행', hazards: ['붐 낙하','전도'], riskLevel: '매우높음', controls: ['작업반경 통제','단계별 지지','신호수 배치'] },
+      { step: '작업 후 정리', hazards: ['부재 전도'], riskLevel: '보통', controls: ['부재 고정·적치','장비 안정화'] }
+    ]
+  },
+  {
+    id: 33, date: '2017-08-11', workplace: '제철소 부생가스(BFG/COG) 배관', workType: '가스설비 작업', workLocation: '옥외 배관',
+    accidentType: '폭발', cause: '가스배관 정비 중 잔류 가연성 가스 미제거 상태에서 화기작업, 폭발',
+    victims: { death: 2, serious: 3, minor: 0 },
+    preventiveMeasures: '가스 퍼징·치환, 가연성가스 농도 측정, 화기작업허가, 맹판(블라인드) 설치',
+    relatedLaw: '산업안전보건기준에 관한 규칙 제232조·제241조(화재위험작업)', environmentFactors: ['위험물','화기','유해가스(CO/H2S 등)'],
+    jsaSteps: [
+      { step: '작업 전 준비', hazards: ['잔류 가연성가스','맹판 미설치'], riskLevel: '매우높음', controls: ['질소 퍼징·치환','가연성가스 농도 측정(LEL)','맹판 설치·화기작업허가'] },
+      { step: '본 작업 수행', hazards: ['점화원','재발생 가스'], riskLevel: '매우높음', controls: ['연속 가스측정','소화기 비치·감시자','불티 비산 방지'] },
+      { step: '작업 후 정리', hazards: ['잔불','가스 재유입'], riskLevel: '높음', controls: ['30분 화재감시','밸브 차단 확인','허가서 종료'] }
+    ]
+  },
+  {
+    id: 34, date: '2019-06-25', workplace: '제철소 변전·전기실', workType: '전기설비 작업', workLocation: '전기실',
+    accidentType: '감전', cause: '활선 상태 배전반 점검 중 감전',
+    victims: { death: 1, serious: 0, minor: 0 },
+    preventiveMeasures: '정전작업·검전·접지, 잠금표지(LOTO), 절연보호구 착용',
+    relatedLaw: '산업안전보건기준에 관한 규칙 제319조~제323조(정전작업·활선)', environmentFactors: ['전기'],
+    jsaSteps: [
+      { step: '작업 전 준비', hazards: ['활선','전원 미차단'], riskLevel: '매우높음', controls: ['정전·검전·접지','LOTO 시행','절연장갑·매트'] },
+      { step: '본 작업 수행', hazards: ['잔류전하','오조작'], riskLevel: '매우높음', controls: ['단독작업 금지','전원 무단투입 금지','경계표시'] },
+      { step: '작업 후 정리', hazards: ['재투입 위험'], riskLevel: '높음', controls: ['인원 안전위치 확인 후 투입','절연저항 측정 기록'] }
+    ]
+  },
+  {
+    id: 35, date: '2020-10-30', workplace: '제철소 소결공장 대차 하부', workType: '소결 작업', workLocation: '소결로',
+    accidentType: '끼임', cause: '가동 중 소결기 대차 하부 정비 중 끼임',
+    victims: { death: 1, serious: 0, minor: 0 },
+    preventiveMeasures: '설비 정지·LOTO, 방호장치, 감시인 배치',
+    relatedLaw: '산업안전보건기준에 관한 규칙 제20조·제92조', environmentFactors: ['회전체','분진','고온(200℃ 이상)'],
+    jsaSteps: [
+      { step: '작업 전 준비', hazards: ['가동 설비','전원 미차단'], riskLevel: '매우높음', controls: ['설비 정지·LOTO','정지 확인','작업허가'] },
+      { step: '본 작업 수행', hazards: ['끼임','고온'], riskLevel: '매우높음', controls: ['방호장치 유지','2인1조','접근통제'] },
+      { step: '작업 후 정리', hazards: ['재가동 위험'], riskLevel: '높음', controls: ['인원 확인 후 재가동','방호장치 원복'] }
+    ]
+  },
+  {
+    id: 36, date: '2022-03-18', workplace: '제철소 고로 출선구', workType: '고로 작업', workLocation: '고로',
+    accidentType: '화상', cause: '출선구 폐쇄(머드건) 작업 중 용융물·슬래그 분출',
+    victims: { death: 0, serious: 1, minor: 2 },
+    preventiveMeasures: '원격 머드건 조작, 방열복, 안전거리, 수분 관리',
+    relatedLaw: '산업안전보건기준에 관한 규칙 제247조(용융물)', environmentFactors: ['고온(200℃ 이상)','위험물'],
+    jsaSteps: [
+      { step: '작업 전 준비', hazards: ['잔류 용융물','수분'], riskLevel: '높음', controls: ['원격 조작 확인','건조 상태 점검','보호구 착용'] },
+      { step: '본 작업 수행', hazards: ['분출','비산'], riskLevel: '매우높음', controls: ['안전거리','비산 차단','하부 통제'] },
+      { step: '작업 후 정리', hazards: ['고온 잔류'], riskLevel: '보통', controls: ['냉각 확인','잔재 처리'] }
+    ]
+  },
+  {
+    id: 37, date: '2021-01-27', workplace: '제철소 원료 컨베이어', workType: '운반/하역 작업', workLocation: '야적장',
+    accidentType: '끼임', cause: '가동 중 컨베이어 벨트 부착물 제거 중 협착',
+    victims: { death: 1, serious: 0, minor: 0 },
+    preventiveMeasures: '정지·LOTO 후 청소, 비상정지 로프, 방호덮개',
+    relatedLaw: '산업안전보건기준에 관한 규칙 제87조·제92조(컨베이어)', environmentFactors: ['회전체','분진'],
+    jsaSteps: [
+      { step: '작업 전 준비', hazards: ['가동 벨트'], riskLevel: '매우높음', controls: ['정지·LOTO','비상정지장치 확인','작업허가'] },
+      { step: '본 작업 수행', hazards: ['말림·협착'], riskLevel: '매우높음', controls: ['운전 중 청소금지','방호덮개','2인 확인'] },
+      { step: '작업 후 정리', hazards: ['재가동'], riskLevel: '높음', controls: ['인원 확인 후 가동','덮개 원복'] }
+    ]
+  },
+  {
+    id: 38, date: '2018-09-05', workplace: '제철소 가스홀더 상부', workType: '가스설비 작업', workLocation: '가스홀더',
+    accidentType: '추락', cause: '가스홀더 점검 통로에서 안전대 미착용 상태로 추락',
+    victims: { death: 1, serious: 0, minor: 0 },
+    preventiveMeasures: '안전대·수직구명줄, 안전난간, 가스농도 측정 병행',
+    relatedLaw: '산업안전보건기준에 관한 규칙 제42조·제44조(추락·안전대)', environmentFactors: ['고소','유해가스(CO/H2S 등)'],
+    jsaSteps: [
+      { step: '작업 전 준비', hazards: ['고소','가스'], riskLevel: '높음', controls: ['안전대 부착설비','가스농도 측정','통로 점검'] },
+      { step: '본 작업 수행', hazards: ['추락','가스노출'], riskLevel: '매우높음', controls: ['안전대 이중 체결','2인1조','연속 가스측정'] },
+      { step: '작업 후 정리', hazards: ['시설 미복구'], riskLevel: '보통', controls: ['안전시설 원복','퇴출 확인'] }
+    ]
+  },
+  {
+    id: 39, date: '2020-08-19', workplace: '제철소 지하 배수 피트', workType: '밀폐공간 작업', workLocation: '지하 피트',
+    accidentType: '질식', cause: '지하 피트 슬러지 준설 중 황화수소(H2S) 중독',
+    victims: { death: 2, serious: 1, minor: 0 },
+    preventiveMeasures: '진입 전 유해가스 측정, 강제환기, 송기마스크, 감시인·구조장비',
+    relatedLaw: '산업안전보건기준에 관한 규칙 제619조~제624조(밀폐공간)', environmentFactors: ['밀폐공간','유해가스(CO/H2S 등)','산소결핍'],
+    jsaSteps: [
+      { step: '작업 전 준비', hazards: ['H2S 잔류','산소결핍'], riskLevel: '매우높음', controls: ['가스·산소 측정','강제환기','작업허가서·송기마스크'] },
+      { step: '본 작업 수행', hazards: ['슬러지 교란 가스 급증'], riskLevel: '매우높음', controls: ['연속 모니터링','2인1조','감시인·구조장비 대기'] },
+      { step: '작업 후 정리', hazards: ['잔류가스'], riskLevel: '높음', controls: ['재측정','환기 후 밀폐'] }
+    ]
+  },
+  {
+    id: 40, date: '2019-11-12', workplace: '제철소 천장크레인 정비', workType: '해체/정비 작업', workLocation: '옥상/고소',
+    accidentType: '추락', cause: '천장크레인 거더 상부 보수 중 안전대 미체결로 추락',
+    victims: { death: 1, serious: 0, minor: 0 },
+    preventiveMeasures: '수평구명줄 설치, 안전대 체결, 크레인 전원차단·정지',
+    relatedLaw: '산업안전보건기준에 관한 규칙 제42조·제44조', environmentFactors: ['고소','전기'],
+    jsaSteps: [
+      { step: '작업 전 준비', hazards: ['고소','크레인 이동'], riskLevel: '매우높음', controls: ['크레인 정지·LOTO','수평구명줄 설치','안전대 확인'] },
+      { step: '본 작업 수행', hazards: ['추락','협착'], riskLevel: '매우높음', controls: ['안전대 이중 체결','인접 크레인 운행 통제'] },
+      { step: '작업 후 정리', hazards: ['재가동'], riskLevel: '보통', controls: ['인원 확인','전원 인가'] }
+    ]
+  },
+  {
+    id: 41, date: '2016-04-28', workplace: '제철소 제강 취련장', workType: '전로 작업', workLocation: '전로',
+    accidentType: '폭발', cause: '전로 장입물·레이들에 수분 접촉으로 수증기 폭발(슬래그 비산)',
+    victims: { death: 0, serious: 3, minor: 2 },
+    preventiveMeasures: '장입물·용기 건조 관리, 수분 유입 차단, 안전거리 확보',
+    relatedLaw: '산업안전보건기준에 관한 규칙 제247조(용융물 취급)', environmentFactors: ['고온(200℃ 이상)','위험물'],
+    jsaSteps: [
+      { step: '작업 전 준비', hazards: ['용기 수분','습기'], riskLevel: '매우높음', controls: ['용기·장입물 건조 확인','배수·방수','예열'] },
+      { step: '본 작업 수행', hazards: ['수증기 폭발','슬래그 비산'], riskLevel: '매우높음', controls: ['안전거리','비산 방지','원격 감시'] },
+      { step: '작업 후 정리', hazards: ['고온 잔류물'], riskLevel: '보통', controls: ['냉각 확인','잔재 처리'] }
+    ]
+  },
+  {
+    id: 42, date: '2021-09-09', workplace: '제철소 열연 가열로', workType: '압연 작업', workLocation: '압연기',
+    accidentType: '폭발', cause: '가열로 버너 점화 지연 후 재점화 시 미연소 가스 폭발',
+    victims: { death: 0, serious: 2, minor: 1 },
+    preventiveMeasures: '점화 전 노내 퍼징, 가스누출 점검, 점화 절차 준수',
+    relatedLaw: '산업안전보건기준에 관한 규칙 제269조(가열로·연소설비)', environmentFactors: ['화기','위험물','고온(200℃ 이상)'],
+    jsaSteps: [
+      { step: '작업 전 준비', hazards: ['노내 잔류가스'], riskLevel: '높음', controls: ['노내 퍼징','가스누출 점검','점화 절차 확인'] },
+      { step: '본 작업 수행', hazards: ['미연소가스 폭발'], riskLevel: '매우높음', controls: ['점화 실패 시 재퍼징 후 점화','원격 점화','접근 통제'] },
+      { step: '작업 후 정리', hazards: ['불완전 연소'], riskLevel: '보통', controls: ['연소 상태 확인','가스밸브 점검'] }
+    ]
+  },
+  {
+    id: 43, date: '2020-02-14', workplace: '제철소 냉연 산세(피클링) 라인', workType: '기타', workLocation: '기타',
+    accidentType: '기타', cause: '산세조 황산 취급 중 누출·비산으로 화학화상',
+    victims: { death: 0, serious: 1, minor: 2 },
+    preventiveMeasures: '내산복·보안면 착용, 세안·세척 설비, 누출 방지 및 국소배기',
+    relatedLaw: '산업안전보건기준에 관한 규칙 제420조~제454조(관리대상 유해물질)', environmentFactors: ['위험물','유해가스(CO/H2S 등)'],
+    jsaSteps: [
+      { step: '작업 전 준비', hazards: ['산 누출','증기'], riskLevel: '높음', controls: ['내산복·보안면','국소배기 확인','세안설비 점검'] },
+      { step: '본 작업 수행', hazards: ['비산·접촉','흡입'], riskLevel: '높음', controls: ['비산 차단','방독마스크','단독작업 금지'] },
+      { step: '작업 후 정리', hazards: ['잔류 산'], riskLevel: '보통', controls: ['중화·세척','폐액 적정 처리'] }
+    ]
+  },
+  {
+    id: 44, date: '2022-06-30', workplace: '제철소 집진덕트 해체현장', workType: '해체/정비 작업', workLocation: '옥외 배관',
+    accidentType: '기타', cause: '노후 집진덕트 해체 중 부재 낙하로 하부 작업자 맞음',
+    victims: { death: 1, serious: 1, minor: 0 },
+    preventiveMeasures: '해체 작업계획서, 상하 동시작업 금지, 낙하물 방지망, 부재 지지',
+    relatedLaw: '산업안전보건기준에 관한 규칙 제38조·제20조(해체작업계획)', environmentFactors: ['중량물','고소','분진'],
+    jsaSteps: [
+      { step: '작업 전 준비', hazards: ['부재 불안정','계획 미비'], riskLevel: '높음', controls: ['해체 작업계획서','지지대 설치','통제구역 설정'] },
+      { step: '본 작업 수행', hazards: ['낙하물','붕괴'], riskLevel: '매우높음', controls: ['상하 동시작업 금지','낙하물 방지망','단계적 해체'] },
+      { step: '작업 후 정리', hazards: ['잔재 낙하'], riskLevel: '보통', controls: ['잔재 즉시 제거','적치 안정성 확인'] }
+    ]
   }
 ];

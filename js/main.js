@@ -16,11 +16,20 @@ function setCurrentDate() {
 // ---- 사이드바 법령 기준일 / 데이터 최신화 날짜 주입 ----
 // constants.js의 SG_LAW_DATE · SG_DATA_DATE 상수를 참조합니다.
 // 법령·데이터를 최신화할 때 constants.js 두 상수만 수정하면 자동 반영됩니다.
+function sgFormatToday() {
+  const days = ['일','월','화','수','목','금','토'];
+  const d = new Date();
+  const ymd = d.getFullYear() + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + String(d.getDate()).padStart(2, '0');
+  return ymd + ' (' + days[d.getDay()] + ')';
+}
 function setSidebarVersionDates() {
   const lawEl  = document.getElementById('footer-law-date');
   const dataEl = document.getElementById('footer-data-date');
-  if (lawEl  && typeof SG_LAW_DATE  !== 'undefined') lawEl.textContent  = SG_LAW_DATE;
-  if (dataEl && typeof SG_DATA_DATE !== 'undefined') dataEl.textContent = SG_DATA_DATE;
+  const today = sgFormatToday();
+  // 데이터 최신화: 접속 시점 기준으로 자동 갱신 (요일 포함)
+  if (dataEl) dataEl.textContent = today;
+  // 법령 기준일: 기본은 오늘. 법제처 API 연동 상태에 따라 law_api.js가 갱신
+  if (lawEl) lawEl.textContent = today;
 }
 
 // ---- 페이지 제목 맵 ----

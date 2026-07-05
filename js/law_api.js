@@ -392,6 +392,16 @@ async function checkLawApiHealth() {
 
 /** 법령 상태 인디케이터 DOM 업데이트 */
 function updateLawStatusIndicator(status) {
+  // 좌측 하단 '법령 기준일'을 API 상태에 따라 자동 갱신
+  const lawDateEl = document.getElementById('footer-law-date');
+  if (lawDateEl) {
+    const days = ['일','월','화','수','목','금','토'];
+    const d = new Date();
+    const ymd = d.getFullYear() + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + String(d.getDate()).padStart(2, '0') + ' (' + days[d.getDay()] + ')';
+    if (status === 'online') lawDateEl.textContent = ymd;
+    else if (status === 'offline') lawDateEl.textContent = (typeof SG_LAW_DATE !== 'undefined' ? SG_LAW_DATE : ymd) + ' · 오프라인';
+  }
+
   const dot   = document.getElementById('lawApiStatusDot');
   const text  = document.getElementById('lawApiStatusText');
   if (!dot || !text) return;

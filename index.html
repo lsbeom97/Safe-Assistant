@@ -855,10 +855,17 @@
           </div>
         </div>
 
+        <!-- 사업 내용 자유 입력 → 인허가 자동 추천 -->
+        <div class="form-group" style="margin-top:4px;">
+          <label class="form-label"><i class="fas fa-magic"></i> 사업 내용으로 인허가 자동 추천</label>
+          <textarea class="form-input" id="projectDescInput" rows="2" placeholder="사업 내용을 자유롭게 적어주세요. 예: 광양 2고로 개수 및 소결설비 증설, 유해화학물질(황산) 취급, 고압가스(산소·질소) 사용, 밀폐공간 작업 포함"></textarea>
+          <button type="button" class="btn-primary-sm" style="margin-top:8px;" onclick="recommendByProjectText()"><i class="fas fa-magic"></i> 사업 내용 분석 → 인허가 추천</button>
+        </div>
+
         <!-- 추천 항목 안내 배너 -->
         <div class="recommend-banner" id="recommendBanner" style="display:none;">
           <i class="fas fa-lightbulb"></i>
-          <span id="recommendBannerText">공사 구분을 선택하면 필수 인허가 항목이 표시됩니다.</span>
+          <span id="recommendBannerText">공사 구분을 선택하거나 사업 내용을 입력하면 필수 인허가 항목이 표시됩니다.</span>
         </div>
       </div>
 

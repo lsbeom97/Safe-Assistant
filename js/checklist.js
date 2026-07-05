@@ -311,21 +311,13 @@ function selectAllChecklist(selectAll) {
   showToast('info', selectAll ? `✅ 전체 ${CHECKLIST_ITEMS.length}개 항목이 선택되었습니다.` : '⬜ 전체 선택이 해제되었습니다.');
 }
 
-// ---- 공사 구분 변경 시 추천 항목 자동 하이라이트 ----
-function onConstructionTypeChange() {
-  const constructionType = document.getElementById('constructionType').value;
-  const recommendedIds = constructionType && RECOMMENDATION_MAP[constructionType]
-    ? new Set(RECOMMENDATION_MAP[constructionType])
-    : new Set();
-
-  // 모든 아이템의 추천 뱃지 업데이트
+// ---- 추천 하이라이트 적용 (공사구분/사업내용 공통) ----
+function applyRecommendationHighlight(recommendedIds, bannerHtml) {
   CHECKLIST_ITEMS.forEach(item => {
     const card = document.getElementById(`check-card-${item.id}`);
     if (!card) return;
-
     if (recommendedIds.has(item.id)) {
       card.classList.add('recommended');
-      // 추천 뱃지 추가
       const badgesDiv = card.querySelector('.checklist-badges');
       if (badgesDiv && !badgesDiv.querySelector('.badge-recommended')) {
         const badge = document.createElement('span');
@@ -339,8 +331,6 @@ function onConstructionTypeChange() {
       if (badge) badge.remove();
     }
   });
-
-  // 아코디언 헤더 추천 수 업데이트
   CATEGORIES.forEach(cat => {
     const catItems = CHECKLIST_ITEMS.filter(i => i.category === cat.id);
     const recCount = catItems.filter(i => recommendedIds.has(i.id)).length;
@@ -348,37 +338,107 @@ function onConstructionTypeChange() {
     const headerLeft = document.querySelector(`#accordion-${catIdSafe} .accordion-header-left`);
     if (headerLeft) {
       const existingRecBadge = headerLeft.querySelector('.accordion-rec-badge');
-      if (recCount > 0 && constructionType) {
-        if (existingRecBadge) {
-          existingRecBadge.textContent = `추천 ${recCount}개`;
-        } else {
-          const badge = document.createElement('span');
-          badge.className = 'accordion-rec-badge';
-          badge.textContent = `추천 ${recCount}개`;
-          headerLeft.appendChild(badge);
-        }
-      } else {
-        if (existingRecBadge) existingRecBadge.remove();
-      }
+      if (recCount > 0) {
+        if (existingRecBadge) { existingRecBadge.textContent = `추천 ${recCount}개`; }
+        else { const b=document.createElement('span'); b.className='accordion-rec-badge'; b.textContent=`추천 ${recCount}개`; headerLeft.appendChild(b); }
+      } else if (existingRecBadge) { existingRecBadge.remove(); }
     }
   });
+  const banner = document.getElementById('recommendBanner');
+  const bannerText = document.getElementById('recommendBannerText');
+  if (banner && bannerText) {
+    if (bannerHtml) { bannerText.innerHTML = bannerHtml; banner.style.display = 'flex'; }
+    else { banner.style.display = 'none'; }
+  }
+}
 
+// ---- 공사 구분 변경 시 추천 항목 자동 하이라이트 ----
+function onConstructionTypeChange() {
+  const constructionType = document.getElementById('constructionType').value;
+  const recommendedIds = constructionType && RECOMMENDATION_MAP[constructionType]
+    ? new Set(RECOMMENDATION_MAP[constructionType])
+    : new Set();
   if (constructionType) {
     const typeName = CONSTRUCTION_TYPE_MAP[constructionType] || constructionType;
-
-    // 추천 배너 표시
-    const banner = document.getElementById('recommendBanner');
-    const bannerText = document.getElementById('recommendBannerText');
-    if (banner && bannerText) {
-      bannerText.innerHTML = `<strong>[${typeName}]</strong> 공사에 추천되는 인허가 항목 <strong>${recommendedIds.size}개</strong>가 표시되었습니다. (주황색 테두리 = 추천 항목)`;
-      banner.style.display = 'flex';
-    }
-
-    showToast('info', `📋 [${typeName}] 선택: 추천 항목 ${recommendedIds.size}개가 표시되었습니다.`);
+    applyRecommendationHighlight(recommendedIds, `<strong>[${typeName}]</strong> 공사에 추천되는 인허가 항목 <strong>${recommendedIds.size}개</strong>가 표시되었습니다. (주황색 테두리 = 추천 항목)`);
+    if (typeof showToast === 'function') showToast('info', `📋 [${typeName}] 선택: 추천 항목 ${recommendedIds.size}개가 표시되었습니다.`);
   } else {
-    const banner = document.getElementById('recommendBanner');
-    if (banner) banner.style.display = 'none';
+    applyRecommendationHighlight(new Set(), '');
   }
+}
+
+/* ============================================================
+   사업 내용(자유 텍스트) 분석 → 인허가 자동 추천
+   ============================================================ */
+// 인허가 개념 키워드 → 체크리스트 항목 id
+const SG_PERMIT_KEYWORDS = [
+  { ids:[17], kw:['화학물질','유해화학','화관법','황산','염산','암모니아','약품','시약','유독물','도금액'] },
+  { ids:[18], kw:['공정안전','PSM','유해위험설비','위험설비'] },
+  { ids:[11,19,20], kw:['고압가스','산소','질소','아르곤','부생가스','BFG','COG','수소','LNG','가스정제','가스홀더','특수가스'] },
+  { ids:[24], kw:['위험물','연료유','인화성','저장탱크','윤활유','경유','벙커C','기름'] },
+  { ids:[12], kw:['대기','배출가스','굴뚝','매연','소결','코크스','소성','연소','대기오염'] },
+  { ids:[13], kw:['폐수','수질','산세','도금','냉연','폐액','방류','오폐수'] },
+  { ids:[14], kw:['폐기물','슬래그','폐내화물','슬러지','폐기','부산물'] },
+  { ids:[15], kw:['환경영향평가','환경영향'] },
+  { ids:[16], kw:['비산먼지','먼지','분진','토공','굴착','철거','해체','토사'] },
+  { ids:[21], kw:['전기','변전','수전','배전','전기실','수배전','전력'] },
+  { ids:[22], kw:['에너지','열사용','에너지사용','연료 사용'] },
+  { ids:[23], kw:['소방','화재','스프링클러','소화','제연'] },
+  { ids:[25], kw:['압력용기','보일러','열풍로','스팀','증기','열교환기'] },
+  { ids:[26], kw:['건축','건물','공장설립','신축','증축','건축물','공장 신설'] },
+  { ids:[27], kw:['도로','점용','진입로','굴착'] },
+  { ids:[28], kw:['토지','형질변경','부지조성','재해영향','부지 조성','절토','성토'] },
+  { ids:[8], kw:['밀폐공간','탱크 내부','고로 내부','피트','맨홀','노체 내부'] },
+  { ids:[6], kw:['보건','유해인자','소음','진동','작업환경','석면'] }
+];
+// 공사구분 감지 키워드 → RECOMMENDATION_MAP 키
+const SG_CONSTRUCTION_KEYWORDS = [
+  { type:'고로개수', kw:['고로 개수','고로개수','릴라이닝','고로 대수리','개수공사','노체 개수'] },
+  { type:'고로신설', kw:['고로 신설','고로신설','신규 고로','용광로 신설','고로 증설'] },
+  { type:'열풍로신설보수', kw:['열풍로'] },
+  { type:'소결설비신설증설', kw:['소결'] },
+  { type:'코크스설비신설증설', kw:['코크스'] },
+  { type:'가스정제설비교체증설', kw:['가스정제','가스 정제'] },
+  { type:'부생가스배관설치교체', kw:['부생가스 배관','가스배관','배관 설치','배관 교체'] },
+  { type:'원료처리설비증설', kw:['원료처리','원료 처리','하역','컨베이어','야드','원료 이송'] }
+];
+// 모든 제철 공사 공통 안전 인허가
+const SG_BASELINE_IDS = [3,4,5,7,9,10,29];
+
+function recommendByProjectText() {
+  const el = document.getElementById('projectDescInput');
+  const text = ((el ? el.value : '') || '').trim();
+  if (text.length < 4) {
+    if (typeof showToast === 'function') showToast('warning', '사업 내용을 조금 더 자세히 입력해 주세요. (예: 고로 개수, 유해화학물질 취급, 고압가스 사용)');
+    return;
+  }
+  const t = text.replace(/\s+/g, ' ');
+  const ids = new Set();
+  // 1) 공사구분 감지 → RECOMMENDATION_MAP
+  SG_CONSTRUCTION_KEYWORDS.forEach(g => {
+    if (g.kw.some(k => t.includes(k))) (RECOMMENDATION_MAP[g.type] || []).forEach(id => ids.add(id));
+  });
+  // 2) 인허가 개념 키워드
+  SG_PERMIT_KEYWORDS.forEach(g => { if (g.kw.some(k => t.includes(k))) g.ids.forEach(id => ids.add(id)); });
+  // 3) 설비 설치/변경 언급 시 유해위험방지계획서
+  if (/신설|증설|설치|변경|개수|교체|해체|보수|공사/.test(t)) ids.add(1);
+  // 4) 무언가 인식되면 공통 안전 인허가 추가
+  if (ids.size > 0) SG_BASELINE_IDS.forEach(id => ids.add(id));
+
+  if (ids.size === 0) {
+    if (typeof showToast === 'function') showToast('info', '인식된 키워드가 없습니다. 예: "고로 개수 및 소결 증설, 유해화학물질(황산) 취급, 고압가스 사용, 밀폐공간 작업".');
+    return;
+  }
+  // 추천 항목 자동 선택
+  if (typeof checkedItems !== 'undefined') {
+    ids.forEach(id => checkedItems.add(id));
+    if (typeof initChecklistGrid === 'function') initChecklistGrid();
+    if (typeof updateSelectedCount === 'function') updateSelectedCount();
+    if (typeof syncNotifItems === 'function') syncNotifItems();
+    if (typeof saveChecklistStateToStorage === 'function') saveChecklistStateToStorage();
+  }
+  applyRecommendationHighlight(ids, `입력하신 사업 내용에서 관련 인허가 <strong>${ids.size}개</strong>를 자동 추천·선택했습니다. (주황색 테두리 = 추천 / 필요 없는 항목은 개별 해제하세요)`);
+  if (typeof showToast === 'function') showToast('success', `✅ 사업 내용 분석 완료 — 관련 인허가 ${ids.size}개 추천`);
 }
 
 // ---- 확인하기 버튼 ----
